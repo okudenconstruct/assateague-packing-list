@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Assateague Packing List</title>
+<style>
+  :root {
+    --sand: #F2EDE4;
+    --dune: #D9CEB8;
+    --ocean: #2A6B7C;
+    --ocean-light: #E8F3F6;
+    --ocean-dark: #1A4A57;
+    --pony: #8B5E3C;
+    --pony-light: #F5EDE5;
+    --text: #1C1C1C;
+    --text-muted: #6B6560;
+    --white: #FFFFFF;
+    --check: #2A7C5F;
+    --check-light: #E6F5EF;
+    --border: rgba(0,0,0,0.10);
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Georgia', serif;
+    background: var(--sand);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    background: var(--ocean-dark);
+    color: white;
+    padding: 2rem 1.5rem 1.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 18px;
+    background: var(--sand);
+    clip-path: ellipse(55% 100% at 50% 100%);
+  }
+
+  .header-eyebrow {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 0.5rem;
+  }
+
+  header h1 {
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    font-weight: normal;
+    font-style: italic;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+    color: white;
+  }
+
+  .header-meta {
+    margin-top: 0.75rem;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 0.06em;
+  }
+
+  /* Progress */
+  .progress-wrap {
+    max-width: 680px;
+    margin: 1.75rem auto 0;
+    padding: 0 1.25rem;
+  }
+
+  .progress-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.5rem;
+  }
+
+  .progress-label {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+  }
+
+  .reset-btn {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+  }
+
+  .reset-btn:hover { color: var(--ocean); }
+
+  .progress-track {
+    height: 5px;
+    background: var(--dune);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: var(--check);
+    border-radius: 99px;
+    transition: width 0.35s ease;
+    width: 0%;
+  }
+
+  /* Filters */
+  .filters {
+    max-width: 680px;
+    margin: 1.25rem auto 0;
+    padding: 0 1.25rem;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: 5px 13px;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.15s;
+  }
+
+  .filter-btn:hover { border-color: var(--ocean); color: var(--ocean); }
+  .filter-btn.active {
+    background: var(--ocean);
+    border-color: var(--ocean);
+    color: white;
+  }
+
+  /* Main content */
+  main {
+    max-width: 680px;
+    margin: 1.5rem auto 3rem;
+    padding: 0 1.25rem;
+  }
+
+  /* Section */
+  .section { margin-bottom: 2rem; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--dune);
+    margin-bottom: 10px;
+  }
+
+  .section-icon {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    background: var(--ocean-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .section-title {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ocean-dark);
+    font-weight: bold;
+  }
+
+  .section-count {
+    margin-left: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  /* Item grid */
+  .item-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 6px;
+  }
+
+  .item {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    padding: 9px 10px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s;
+    user-select: none;
+  }
+
+  .item:hover { background: #fafaf8; border-color: rgba(0,0,0,0.15); }
+
+  .item.checked {
+    background: var(--check-light);
+    border-color: rgba(42,124,95,0.2);
+  }
+
+  .item.checked .item-label {
+    text-decoration: line-through;
+    color: var(--text-muted);
+  }
+
+  .cb {
+    width: 17px;
+    height: 17px;
+    min-width: 17px;
+    border-radius: 4px;
+    border: 1.5px solid var(--dune);
+    margin-top: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    background: white;
+  }
+
+  .item.checked .cb {
+    background: var(--check);
+    border-color: var(--check);
+  }
+
+  .cb-check {
+    display: none;
+    width: 10px;
+    height: 7px;
+    border-left: 2px solid white;
+    border-bottom: 2px solid white;
+    transform: rotate(-45deg) translate(1px, -1px);
+  }
+
+  .item.checked .cb-check { display: block; }
+
+  .item-label {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.35;
+  }
+
+  .tag {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 99px;
+    margin-left: auto;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .tag-verify { background: var(--ocean-light); color: var(--ocean-dark); }
+  .tag-kids { background: var(--pony-light); color: var(--pony); }
+
+  /* Custom items */
+  .item-delete {
+    margin-left: auto;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 16px;
+    line-height: 1;
+    padding: 0 2px;
+    flex-shrink: 0;
+  }
+
+  .item-delete:hover { color: #c0392b; }
+
+  .add-item-row {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 6px;
+    margin-top: 2px;
+  }
+
+  .add-item-input {
+    flex: 1;
+    font-family: 'Georgia', serif;
+    font-size: 13px;
+    padding: 9px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: white;
+    color: var(--text);
+  }
+
+  .add-item-input:focus {
+    outline: none;
+    border-color: var(--ocean);
+  }
+
+  .add-item-btn {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    padding: 9px 16px;
+    border-radius: var(--radius);
+    border: 1px solid var(--ocean);
+    background: var(--ocean);
+    color: white;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+
+  .add-item-btn:hover { background: var(--ocean-dark); }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 1.5rem;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+    border-top: 1px solid var(--dune);
+  }
+
+  /* Responsive */
+  @media (max-width: 480px) {
+    .item-grid { grid-template-columns: 1fr; }
+    header { padding: 1.5rem 1rem 1.25rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .progress-bar { transition: none; }
+    .item, .filter-btn { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="header-eyebrow">Assateague State Park &nbsp;·&nbsp; June 2026</p>
+  <h1>Packing List</h1>
+  <p class="header-meta">5 people &nbsp;·&nbsp; 5–7 nights &nbsp;·&nbsp; Camper rental</p>
+</header>
+
+<div class="progress-wrap">
+  <div class="progress-top">
+    <span class="progress-label" id="progress-label">0 of 0 packed</span>
+    <button class="reset-btn" onclick="resetAll()">uncheck all</button>
+  </div>
+  <div class="progress-track">
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
+</div>
+
+<div class="filters" id="filters">
+  <button class="filter-btn active" data-filter="all" onclick="setFilter('all',this)">All</button>
+  <button class="filter-btn" data-filter="beach" onclick="setFilter('beach',this)">Beach</button>
+  <button class="filter-btn" data-filter="bike" onclick="setFilter('bike',this)">Biking</button>
+  <button class="filter-btn" data-filter="hiking" onclick="setFilter('hiking',this)">Hiking</button>
+  <button class="filter-btn" data-filter="kitchen" onclick="setFilter('kitchen',this)">Kitchen</button>
+  <button class="filter-btn" data-filter="sleeping" onclick="setFilter('sleeping',this)">Sleeping</button>
+  <button class="filter-btn" data-filter="health" onclick="setFilter('health',this)">Health</button>
+  <button class="filter-btn" data-filter="clothing" onclick="setFilter('clothing',this)">Clothing</button>
+  <button class="filter-btn" data-filter="camp" onclick="setFilter('camp',this)">Camp life</button>
+</div>
+
+<main id="main-list"></main>
+
+<footer>Check off items as you pack — progress saves in your browser.</footer>
+
+<script>
+const SECTIONS = [
+  {
+    id: 'beach',
+    label: 'Beach & swimming',
+    icon: '🌊',
+    items: [
+      { label: 'EZ-up canopy tent', tag: null },
+      { label: 'Towels (2 per person = 10)', tag: null },
+      { label: 'Swimsuits (2 per person)', tag: null },
+      { label: 'Sunscreen SPF 50+ (bring plenty)', tag: null },
+      { label: 'Sun shirts / rash guards', tag: 'kids' },
+      { label: 'Beach chairs (5)', tag: null },
+      { label: 'Beach bag or tote', tag: null },
+      { label: 'Sand toys & buckets', tag: 'kids' },
+      { label: 'Waterproof phone pouch', tag: null },
+      { label: 'Water shoes / sandals', tag: null },
+      { label: 'Dry bags for valuables', tag: null },
+      { label: 'Frisbee / football / paddle ball', tag: null },
+    ]
+  },
+  {
+    id: 'bike',
+    label: 'Biking',
+    icon: '🚲',
+    items: [
+      { label: 'Bike helmets (all 5)', tag: null },
+      { label: 'Bike lock(s)', tag: null },
+      { label: 'Tire pump (hand pump)', tag: null },
+      { label: 'Basic repair kit (patches, multi-tool)', tag: null },
+      { label: 'Water bottles or hydration packs', tag: null },
+      { label: 'Bike lights (front & rear)', tag: null },
+      { label: 'Cargo rack or handlebar bag', tag: 'verify' },
+    ]
+  },
+  {
+    id: 'hiking',
+    label: 'Hiking & wildlife',
+    icon: '🐴',
+    items: [
+      { label: 'Closed-toe trail shoes', tag: null },
+      { label: 'Binoculars (ponies & birds)', tag: null },
+      { label: 'Field guide — Maryland shorebirds', tag: 'verify' },
+      { label: 'Bug spray with DEET', tag: null },
+      { label: 'Permethrin spray for clothing', tag: null },
+      { label: 'Tick removal tool', tag: null },
+      { label: 'Day pack / backpack', tag: null },
+      { label: 'Trail snacks', tag: null },
+      { label: 'Park map (pick up at entrance)', tag: 'verify' },
+    ]
+  },
+  {
+    id: 'kitchen',
+    label: 'Kitchen & food',
+    icon: '🍳',
+    items: [
+      { label: 'Plates & bowls (check if included)', tag: 'verify' },
+      { label: 'Cups & mugs (5+)', tag: 'verify' },
+      { label: 'Silverware / cutlery set', tag: 'verify' },
+      { label: "Sharp chef's knife (camper knives are bad)", tag: null },
+      { label: 'Cutting board', tag: null },
+      { label: 'Can opener', tag: null },
+      { label: 'Dish soap, sponge, drying cloth', tag: null },
+      { label: 'Paper towels', tag: null },
+      { label: 'Aluminum foil', tag: null },
+      { label: 'Zip-lock bags (assorted)', tag: null },
+      { label: 'Reusable grocery bags', tag: null },
+      { label: 'Cooler (for beach days)', tag: null },
+      { label: 'Ice or ice packs', tag: null },
+      { label: 'Coffee maker / pour-over', tag: null },
+      { label: 'Cooking oil / spray', tag: null },
+      { label: 'Salt, pepper, basic spices', tag: null },
+      { label: 'Condiments', tag: null },
+      { label: 'Breakfast staples (eggs, bread, cereal)', tag: null },
+      { label: 'Easy dinners (pasta, hot dogs, burgers)', tag: null },
+      { label: 'Snacks & drinks for 5–7 days', tag: null },
+    ]
+  },
+  {
+    id: 'sleeping',
+    label: 'Sleeping & comfort',
+    icon: '🛏️',
+    items: [
+      { label: 'Pillows (confirm with rental)', tag: 'verify' },
+      { label: 'Bedding / sheets / sleeping bags (confirm)', tag: 'verify' },
+      { label: 'Extra blanket (nights get cool)', tag: null },
+      { label: 'Eye masks & earplugs', tag: null },
+    ]
+  },
+  {
+    id: 'health',
+    label: 'Health & safety',
+    icon: '🩹',
+    items: [
+      { label: 'First aid kit', tag: null },
+      { label: 'Prescription medications (full supply + extra)', tag: null },
+      { label: "Children's ibuprofen/acetaminophen", tag: 'kids' },
+      { label: 'Antihistamine (Benadryl)', tag: null },
+      { label: 'Hydrocortisone cream', tag: null },
+      { label: 'Aloe vera gel (sunburn)', tag: null },
+      { label: 'After-bite / sting relief', tag: null },
+      { label: 'Thermometer', tag: null },
+      { label: 'Tweezers (tick removal)', tag: null },
+      { label: 'Hand sanitizer', tag: null },
+      { label: 'Life jackets (confirm with kayak rental)', tag: 'verify' },
+    ]
+  },
+  {
+    id: 'clothing',
+    label: 'Clothing',
+    icon: '👕',
+    items: [
+      { label: 'T-shirts (2 per day per person)', tag: null },
+      { label: 'Shorts (2–3 per person)', tag: null },
+      { label: 'Long pants (1–2 per person)', tag: null },
+      { label: 'Light jacket or hoodie', tag: null },
+      { label: 'Rain jacket (pack-able)', tag: null },
+      { label: 'Underwear & socks (extra set)', tag: null },
+      { label: 'Pajamas', tag: null },
+      { label: 'Flip flops / camp shoes', tag: null },
+      { label: 'Sun hat / baseball cap', tag: null },
+      { label: 'Sunglasses (per person)', tag: null },
+      { label: 'Laundry bag', tag: null },
+    ]
+  },
+  {
+    id: 'camp',
+    label: 'Camp life & logistics',
+    icon: '🏕️',
+    items: [
+      { label: 'Headlamps or flashlights (one per person)', tag: null },
+      { label: 'Power banks / extra batteries', tag: null },
+      { label: 'Outdoor lantern', tag: null },
+      { label: 'Folding camp chairs', tag: null },
+      { label: 'Entry mat (sand catcher at camper door)', tag: null },
+      { label: 'Small folding table (if not provided)', tag: null },
+      { label: 'Heavy-duty trash bags', tag: null },
+      { label: 'Laundry detergent pods', tag: null },
+      { label: 'Duct tape & zip ties', tag: null },
+      { label: 'Camp games (cards, cornhole, etc.)', tag: null },
+      { label: 'Books / tablets / offline entertainment', tag: null },
+      { label: 'DVD player', tag: null },
+      { label: 'DVD collection', tag: null },
+      { label: 'Phone chargers & adapters', tag: null },
+      { label: 'Camera or GoPro', tag: null },
+      { label: 'Printed rental confirmation', tag: 'verify' },
+      { label: 'Cash for park entrance fees', tag: 'verify' },
+      { label: 'Emergency contact list', tag: null },
+    ]
+  }
+];
+
+const STORAGE_KEY = 'assateague-packed-v2';
+let state = { checked: {}, custom: {}, filter: 'all' };
+
+function load() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      state.checked = parsed.checked || {};
+      state.custom = parsed.custom || {};
+    }
+  } catch(e) {}
+}
+
+function save() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ checked: state.checked, custom: state.custom }));
+  } catch(e) {}
+}
+
+function key(sId, idx) { return `${sId}__${idx}`; }
+function customKey(id) { return `custom__${id}`; }
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function addItem(sectionId, label) {
+  const trimmed = label.trim();
+  if (!trimmed) return;
+  if (!state.custom[sectionId]) state.custom[sectionId] = [];
+  const id = `${sectionId}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+  state.custom[sectionId].push({ id, label: trimmed });
+  save();
+  render();
+}
+
+function deleteCustomItem(sectionId, id) {
+  state.custom[sectionId] = (state.custom[sectionId] || []).filter(it => it.id !== id);
+  delete state.checked[customKey(id)];
+  save();
+  render();
+}
+
+function render() {
+  const container = document.getElementById('main-list');
+  container.innerHTML = '';
+  let total = 0, checked = 0;
+
+  SECTIONS.forEach(section => {
+    if (state.filter !== 'all' && state.filter !== section.id) return;
+
+    const customItems = state.custom[section.id] || [];
+    const sChecked = section.items.filter((_, i) => state.checked[key(section.id, i)]).length
+      + customItems.filter(ci => state.checked[customKey(ci.id)]).length;
+    const sTotal = section.items.length + customItems.length;
+    total += sTotal;
+    checked += sChecked;
+
+    const sec = document.createElement('div');
+    sec.className = 'section';
+
+    sec.innerHTML = `
+      <div class="section-header">
+        <div class="section-icon" aria-hidden="true">${section.icon}</div>
+        <span class="section-title">${section.label}</span>
+        <span class="section-count">${sChecked}/${sTotal}</span>
+      </div>
+      <div class="item-grid" id="grid-${section.id}"></div>
+    `;
+
+    container.appendChild(sec);
+
+    const grid = document.getElementById(`grid-${section.id}`);
+    section.items.forEach((item, idx) => {
+      const k = key(section.id, idx);
+      const isChecked = !!state.checked[k];
+      const el = document.createElement('div');
+      el.className = 'item' + (isChecked ? ' checked' : '');
+      el.setAttribute('role', 'checkbox');
+      el.setAttribute('aria-checked', String(isChecked));
+      el.setAttribute('tabindex', '0');
+
+      let tagHtml = '';
+      if (item.tag === 'verify') tagHtml = `<span class="tag tag-verify">verify</span>`;
+      if (item.tag === 'kids') tagHtml = `<span class="tag tag-kids">kids</span>`;
+
+      el.innerHTML = `<div class="cb"><div class="cb-check"></div></div><span class="item-label">${item.label}</span>${tagHtml}`;
+
+      const toggle = () => {
+        state.checked[k] = !state.checked[k];
+        save();
+        render();
+      };
+      el.addEventListener('click', toggle);
+      el.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(); } });
+      grid.appendChild(el);
+    });
+
+    customItems.forEach(ci => {
+      const k = customKey(ci.id);
+      const isChecked = !!state.checked[k];
+      const el = document.createElement('div');
+      el.className = 'item' + (isChecked ? ' checked' : '');
+      el.setAttribute('role', 'checkbox');
+      el.setAttribute('aria-checked', String(isChecked));
+      el.setAttribute('tabindex', '0');
+
+      el.innerHTML = `<div class="cb"><div class="cb-check"></div></div><span class="item-label">${escapeHtml(ci.label)}</span><button class="item-delete" type="button" title="Remove item" aria-label="Remove item">×</button>`;
+
+      const toggle = () => {
+        state.checked[k] = !state.checked[k];
+        save();
+        render();
+      };
+      el.addEventListener('click', e => {
+        if (e.target.closest('.item-delete')) { deleteCustomItem(section.id, ci.id); return; }
+        toggle();
+      });
+      el.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(); } });
+      grid.appendChild(el);
+    });
+
+    const addRow = document.createElement('div');
+    addRow.className = 'add-item-row';
+    addRow.innerHTML = `
+      <input type="text" class="add-item-input" placeholder="Add item..." aria-label="Add item to ${section.label}">
+      <button class="add-item-btn" type="button">Add</button>
+    `;
+    const input = addRow.querySelector('.add-item-input');
+    const addBtn = addRow.querySelector('.add-item-btn');
+    const submit = () => addItem(section.id, input.value);
+    addBtn.addEventListener('click', () => { submit(); input.value = ''; input.focus(); });
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); submit(); input.value = ''; input.focus(); }
+    });
+    grid.appendChild(addRow);
+  });
+
+  const pct = total > 0 ? Math.round((checked / total) * 100) : 0;
+  document.getElementById('progress-label').textContent = `${checked} of ${total} packed`;
+  document.getElementById('progress-bar').style.width = pct + '%';
+}
+
+function setFilter(filter, btn) {
+  state.filter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function resetAll() {
+  if (confirm('Uncheck all items?')) {
+    state.checked = {};
+    save();
+    render();
+  }
+}
+
+load();
+render();
+</script>
+</body>
+</html>
