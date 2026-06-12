@@ -23,7 +23,7 @@
     --check: #2A7C5F;
     --check-light: #E6F5EF;
     --border: rgba(0,0,0,0.10);
-    --cb-border: #8E8574;
+    --cb-border: #847B6A;
     --radius: 8px;
     --radius-lg: 12px;
   }
@@ -278,6 +278,9 @@
 
   .section.collapsed .chevron { transform: rotate(-45deg); margin-bottom: -2px; }
   .section.collapsed .item-grid { display: none; }
+
+  /* Keep focused elements from hiding under the sticky topbar */
+  .item, .section-h, .add-row, .show-hidden { scroll-margin-top: 130px; }
 
   /* Item grid */
   .item-grid {
@@ -556,6 +559,7 @@
 <main id="main-list"></main>
 
 <div class="visually-hidden" aria-live="polite" id="announcer"></div>
+<div id="snackbar-host" role="status"></div>
 
 <footer id="footer">Check off items as you pack &mdash; progress saves in your browser.</footer>
 
@@ -814,7 +818,8 @@ function load() {
           for (const sid in p.custom) {
             if (!SECTION_IDS.has(sid) || !Array.isArray(p.custom[sid])) continue;
             const arr = p.custom[sid]
-              .filter(it => it && typeof it.id === 'string' && typeof it.label === 'string')
+              .filter(it => it && typeof it.id === 'string' && typeof it.label === 'string' && !ITEM_IDS.has(it.id))
+              .slice(0, MAX_CUSTOM_PER_SECTION)
               .map(it => ({ id: it.id, label: it.label.slice(0, MAX_LABEL) }));
             if (arr.length) state.custom[sid] = arr;
           }
@@ -827,7 +832,11 @@ function load() {
         }
       }
     } catch (e) {
+      // Corrupt v3: discard it and fall through to the v2 migration below,
+      // which may still recover the pre-rewrite checkmarks.
       try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
+      state.checked = {}; state.custom = {}; state.hidden = {}; state.collapsed = {};
+      migrateV2();
     }
     return;
   }
@@ -851,7 +860,8 @@ function migrateV2() {
     for (const sid in oldCustom) {
       if (!SECTION_IDS.has(sid) || !Array.isArray(oldCustom[sid])) continue;
       const arr = oldCustom[sid]
-        .filter(it => it && typeof it.id === 'string' && typeof it.label === 'string')
+        .filter(it => it && typeof it.id === 'string' && typeof it.label === 'string' && !ITEM_IDS.has(it.id))
+        .slice(0, MAX_CUSTOM_PER_SECTION)
         .map(it => ({ id: it.id, label: it.label.slice(0, MAX_LABEL) }));
       if (arr.length) state.custom[sid] = arr;
     }
@@ -1035,13 +1045,15 @@ function toggleItem(row) {
   updateProgress();
 }
 
-// Snackbar with undo
+// Snackbar with undo. The host is a persistent role=status live region (a
+// dynamically inserted live region is not reliably announced); auto-dismiss
+// is deferred while focus is inside so keyboard users can reach Undo.
 let snackTimer = null;
 function showSnack(text, undoLabel, undoFn) {
   hideSnack();
+  const host = document.getElementById('snackbar-host');
   const bar = el('div', 'snackbar');
   bar.id = 'snackbar';
-  bar.setAttribute('role', 'status');
   bar.appendChild(el('span', 'snack-text', text));
   if (undoFn) {
     const u = el('button', null, undoLabel || 'Undo');
@@ -1049,14 +1061,26 @@ function showSnack(text, undoLabel, undoFn) {
     u.addEventListener('click', () => { hideSnack(); undoFn(); });
     bar.appendChild(u);
   }
-  document.body.appendChild(bar);
-  snackTimer = setTimeout(hideSnack, 6000);
+  host.appendChild(bar);
+  armSnackTimer();
+}
+
+function armSnackTimer() {
+  snackTimer = setTimeout(() => {
+    const host = document.getElementById('snackbar-host');
+    if (host.contains(document.activeElement)) { armSnackTimer(); return; }
+    hideSnack();
+  }, 8000);
 }
 
 function hideSnack() {
   if (snackTimer) { clearTimeout(snackTimer); snackTimer = null; }
-  const old = document.getElementById('snackbar');
-  if (old) old.remove();
+  document.getElementById('snackbar-host').replaceChildren();
+}
+
+function focusSnackUndo() {
+  const u = document.querySelector('#snackbar button');
+  if (u) u.focus();
 }
 
 function removeCustomItem(row) {
@@ -1069,6 +1093,7 @@ function removeCustomItem(row) {
   const wasChecked = !!state.checked[id];
   delete state.checked[id];
   save();
+  const hadFocus = row.contains(document.activeElement);
   row.remove();
   updateSectionCount(secId);
   updateProgress();
@@ -1080,6 +1105,7 @@ function removeCustomItem(row) {
     save();
     renderList();
   });
+  if (hadFocus) focusSnackUndo();
 }
 
 function hideBuiltinItem(row) {
@@ -1097,6 +1123,8 @@ function hideBuiltinItem(row) {
     save();
     renderList();
   });
+  const sh = document.querySelector('.show-hidden[data-section="' + secId + '"]');
+  if (sh) sh.focus();
 }
 
 function unhideSection(secId) {
@@ -1106,6 +1134,8 @@ function unhideSection(secId) {
   save();
   renderList();
   announce('Restored hidden items in ' + sec.label);
+  const tog = document.querySelector('.section[data-section="' + secId + '"] .section-toggle');
+  if (tog) tog.focus();
 }
 
 function toggleCollapse(sectionEl) {
@@ -1192,6 +1222,7 @@ function handleReset() {
     resetTimer = setTimeout(() => {
       btn.classList.remove('armed');
       btn.textContent = 'uncheck all';
+      announce('Uncheck all cancelled');
     }, 8000);
     return;
   }
