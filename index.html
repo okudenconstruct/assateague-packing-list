@@ -6,7 +6,8 @@
 <meta name="description" content="Family packing checklist for Assateague State Park — June 2026.">
 <meta name="theme-color" content="#0B0B0F">
 <title>Assateague Packing List</title>
-<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -696,9 +697,25 @@
 
   /* Header */
   header {
-    background: var(--ocean-dark);
-    padding: 2rem 1.5rem 1.7rem;
+    background-color: var(--ocean-dark);
+    background-image:
+      linear-gradient(180deg, rgba(7,7,10,0.46) 0%, rgba(7,7,10,0.70) 52%, rgba(7,7,10,0.95) 100%),
+      url('banner.webp');
+    background-size: cover;
+    background-position: center 40%;
+    padding: 2.6rem 1.5rem 2.1rem;
     border-bottom: 1px solid rgba(0,240,255,0.35);
+  }
+
+  /* Subtle circuit texture behind everything */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: url('bg.webp') center / cover no-repeat;
+    opacity: 0.10;
+    z-index: -1;
+    pointer-events: none;
   }
   header::before {
     height: 6px; clip-path: none;
