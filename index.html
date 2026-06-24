@@ -699,11 +699,15 @@
   header {
     background-color: var(--ocean-dark);
     background-image:
-      linear-gradient(180deg, rgba(7,7,10,0.46) 0%, rgba(7,7,10,0.70) 52%, rgba(7,7,10,0.95) 100%),
+      linear-gradient(180deg, rgba(7,7,10,0.30) 0%, rgba(7,7,10,0.52) 50%, rgba(7,7,10,0.90) 100%),
       url('banner.webp');
     background-size: cover;
-    background-position: center 40%;
-    padding: 2.6rem 1.5rem 2.1rem;
+    background-position: center 58%;
+    padding: 2.4rem 1.5rem 2.2rem;
+    min-height: clamp(210px, 34vw, 300px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     border-bottom: 1px solid rgba(0,240,255,0.35);
   }
 
@@ -713,7 +717,7 @@
     position: fixed;
     inset: 0;
     background: url('bg.webp') center / cover no-repeat;
-    opacity: 0.10;
+    opacity: 0.13;
     z-index: -1;
     pointer-events: none;
   }

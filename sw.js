@@ -1,4 +1,4 @@
-const CACHE = 'assateague-v6';
+const CACHE = 'assateague-v7';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './favicon-32.png', './banner.webp', './bg.webp'];
 
 self.addEventListener('install', e => {
