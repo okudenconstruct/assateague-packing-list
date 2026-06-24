@@ -943,6 +943,7 @@
     <div class="progress-top">
       <span class="progress-label" id="progress-label" aria-live="polite">0 of 0 packed</span>
       <span class="top-actions">
+        <button class="mini-btn" id="share-btn" type="button">share</button>
         <button class="mini-btn" id="edit-btn" type="button" aria-pressed="false">edit list</button>
         <button class="mini-btn" id="reset-btn" type="button">uncheck all</button>
       </span>
@@ -1244,6 +1245,27 @@ function defaultLocFor(itemId, secId) {
 let state = { checked: {}, custom: {}, hidden: {}, collapsed: {}, location: {}, locations: [], groupBy: 'category', filter: 'all', editMode: false };
 let storageWarned = false;
 
+// --- Cloud sync wiring (set by the Firebase module below; null = local-only) ---
+let cloudPush = null;
+let applyingRemote = false;
+
+// Resolve the shared-list id: ?list= in the URL wins, else a remembered id,
+// else a fresh random one. The id is reflected back into the URL so the page
+// is shareable, and remembered so this device rejoins the same list next time.
+function resolveListId() {
+  let url; try { url = new URL(location.href); } catch (e) { return 'local'; }
+  let id = url.searchParams.get('list');
+  try { if (!id) id = localStorage.getItem('packing-list-id'); } catch (e) {}
+  if (!id) { id = 'l'; for (let i = 0; i < 16; i++) id += '0123456789abcdefghijklmnopqrstuvwxyz'[Math.floor(Math.random() * 36)]; }
+  try { localStorage.setItem('packing-list-id', id); } catch (e) {}
+  if (url.searchParams.get('list') !== id) {
+    url.searchParams.set('list', id);
+    try { history.replaceState(null, '', url.toString()); } catch (e) {}
+  }
+  return id;
+}
+const LIST_ID = resolveListId();
+
 function load() {
   let raw = null;
   try { raw = localStorage.getItem(STORAGE_KEY); } catch (e) { warnStorage(); seedLocations(); return; }
@@ -1343,6 +1365,11 @@ function migrateV2() {
 }
 
 function save() {
+  saveLocal();
+  if (cloudPush && !applyingRemote) cloudPush();
+}
+
+function saveLocal() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       checked: state.checked,
@@ -1354,6 +1381,63 @@ function save() {
       groupBy: state.groupBy,
     }));
   } catch (e) { warnStorage(); }
+}
+
+// Shared list data sent to / received from the cloud (device-local UI state
+// like collapsed / groupBy / filter is intentionally NOT synced).
+function cloudData() {
+  return { checked: state.checked, custom: state.custom, hidden: state.hidden, locations: state.locations, location: state.location };
+}
+
+// Apply a remote snapshot: validate the same way load() does, write through to
+// localStorage WITHOUT re-pushing, and re-render. Last-write-wins by design.
+function applyRemote(data) {
+  if (!data || typeof data !== 'object') return;
+  applyingRemote = true;
+  try {
+    const checked = {};
+    if (data.checked && typeof data.checked === 'object' && !Array.isArray(data.checked))
+      for (const k in data.checked) if (data.checked[k] === true) checked[k] = true;
+    state.checked = checked;
+
+    const custom = {};
+    if (data.custom && typeof data.custom === 'object' && !Array.isArray(data.custom))
+      for (const sid in data.custom) {
+        if (!SECTION_IDS.has(sid) || !Array.isArray(data.custom[sid])) continue;
+        const arr = data.custom[sid]
+          .filter(it => it && typeof it.id === 'string' && typeof it.label === 'string' && !ITEM_IDS.has(it.id))
+          .slice(0, MAX_CUSTOM_PER_SECTION)
+          .map(it => ({ id: it.id, label: it.label.slice(0, MAX_LABEL) }));
+        if (arr.length) custom[sid] = arr;
+      }
+    state.custom = custom;
+
+    const hidden = {};
+    if (data.hidden && typeof data.hidden === 'object' && !Array.isArray(data.hidden))
+      for (const k in data.hidden) if (data.hidden[k] === true && ITEM_IDS.has(k)) hidden[k] = true;
+    state.hidden = hidden;
+
+    if (Array.isArray(data.locations)) {
+      const locs = data.locations
+        .filter(l => l && typeof l.id === 'string' && typeof l.label === 'string')
+        .slice(0, MAX_LOCATIONS)
+        .map(l => ({ id: l.id, label: l.label.slice(0, MAX_LABEL) }));
+      if (locs.length) state.locations = locs;
+    }
+
+    const loc = {};
+    if (data.location && typeof data.location === 'object' && !Array.isArray(data.location))
+      for (const k in data.location) if (typeof data.location[k] === 'string') loc[k] = data.location[k];
+    state.location = loc;
+
+    if (state.filter !== 'all' && state.groupBy === 'location' && state.filter !== UNASSIGNED && !state.locations.some(l => l.id === state.filter)) state.filter = 'all';
+
+    saveLocal();
+    buildFilters();
+    renderList();
+  } finally {
+    applyingRemote = false;
+  }
 }
 
 function warnStorage() {
@@ -2058,6 +2142,15 @@ document.getElementById('groupby').addEventListener('click', e => {
 document.getElementById('reset-btn').addEventListener('click', handleReset);
 document.getElementById('edit-btn').addEventListener('click', toggleEditMode);
 
+document.getElementById('share-btn').addEventListener('click', async () => {
+  const url = location.href;
+  try {
+    if (navigator.share) { await navigator.share({ title: 'Assateague Packing List', url }); return; }
+  } catch (e) { return; }
+  try { await navigator.clipboard.writeText(url); showSnack('Share link copied — anyone with it edits this list live'); }
+  catch (e) { showSnack('Copy this link to share: ' + url); }
+});
+
 // --- Boot ---
 
 load();
@@ -2065,10 +2158,61 @@ document.querySelectorAll('#groupby button').forEach(b => b.setAttribute('aria-p
 buildFilters();
 renderList();
 
+// Bridge for the Firebase module (runs after this classic script).
+window.__packing = {
+  listId: LIST_ID,
+  getData: cloudData,
+  applyRemote: applyRemote,
+  registerPush: function (fn) { cloudPush = fn; },
+};
+
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js').catch(() => {});
   });
+}
+</script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, onSnapshot, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC8U4tSfvc0boSu20ghB5YrVUsODjhIs_E",
+  authDomain: "assateague-packing.firebaseapp.com",
+  projectId: "assateague-packing",
+  storageBucket: "assateague-packing.firebasestorage.app",
+  messagingSenderId: "929987026660",
+  appId: "1:929987026660:web:2b4519eaa79a278e3a96f1"
+};
+
+try {
+  const P = window.__packing;
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const ref = doc(db, "sharedLists", P.listId);
+  const clientId = Math.random().toString(36).slice(2) + Date.now().toString(36);
+
+  // Debounced push of the whole shared state.
+  let timer = null;
+  const push = async () => {
+    try { await setDoc(ref, { state: P.getData(), updatedAt: serverTimestamp(), clientId }); }
+    catch (e) { console.warn("cloud push failed", e); }
+  };
+  P.registerPush(() => { clearTimeout(timer); timer = setTimeout(push, 600); });
+
+  // Live listener: ignore our own echoes; seed the doc from local if empty;
+  // otherwise apply the remote snapshot (last-write-wins).
+  let seeded = false;
+  onSnapshot(ref, (snap) => {
+    if (snap.metadata.hasPendingWrites) { seeded = true; return; }
+    if (!snap.exists()) { if (!seeded) { seeded = true; push(); } return; }
+    seeded = true;
+    const d = snap.data();
+    if (d && d.state) P.applyRemote(d.state);
+  }, (err) => console.warn("cloud listen failed", err));
+} catch (e) {
+  console.warn("Firebase init failed — running local-only", e);
 }
 </script>
 </body>
