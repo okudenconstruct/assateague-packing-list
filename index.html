@@ -4,28 +4,33 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Family packing checklist for Assateague State Park — June 2026.">
-<meta name="theme-color" content="#1A4A57">
+<meta name="theme-color" content="#0C4350">
 <title>Assateague Packing List</title>
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
 <style>
   :root {
-    --sand: #F2EDE4;
-    --dune: #D9CEB8;
-    --ocean: #2A6B7C;
-    --ocean-light: #E8F3F6;
-    --ocean-dark: #1A4A57;
-    --pony: #7A4F30;
-    --pony-light: #F5EDE5;
-    --text: #1C1C1C;
-    --text-muted: #6B6560;
-    --check: #2A7C5F;
-    --check-light: #E6F5EF;
-    --border: rgba(0,0,0,0.10);
-    --cb-border: #847B6A;
-    --radius: 8px;
-    --radius-lg: 12px;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --sand: #F4F1EB;
+    --dune: #E3E2DA;
+    --ocean: #11697C;
+    --ocean-light: #E2EFF0;
+    --ocean-dark: #0C4350;
+    --pony: #8A5712;
+    --pony-light: #FBEDD9;
+    --text: #17262A;
+    --text-muted: #54646A;
+    --check: #1D9E75;
+    --check-light: #E9F6F0;
+    --coral: #D85A30;
+    --coral-dark: #AE441E;
+    --border: #E5E3DB;
+    --cb-border: #AEB7B6;
+    --radius: 10px;
+    --radius-lg: 14px;
+    --shadow-sm: 0 1px 2px rgba(12,40,46,0.06);
+    --shadow-bar: 0 6px 16px -8px rgba(12,40,46,0.18);
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -660,6 +665,79 @@
 
   @media (prefers-reduced-motion: reduce) {
     .progress-bar, .item, .filter-btn, .chevron, .mini-btn { transition: none; }
+  }
+
+  /* ===================== Coastal redesign ===================== */
+
+  body, .header-eyebrow, .header-meta, .progress-label, .mini-btn, .filter-btn,
+  .section-title, .section-count, .add-ghost, .add-item-input, .add-item-btn,
+  .viewbar-label, .segmented button, .loc-pre, .item-loc-select, .loc-rename-input,
+  .snackbar, .snackbar button, footer {
+    font-family: var(--font);
+  }
+
+  body { background: var(--sand); -webkit-font-smoothing: antialiased; }
+
+  /* Header */
+  header { padding: 2.1rem 1.5rem 1.9rem; }
+  header::before { height: 22px; clip-path: ellipse(62% 100% at 50% 100%); }
+  .header-eyebrow {
+    font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: #8FC9C4; font-weight: 500;
+  }
+  header h1 {
+    font-style: normal; font-weight: 600; letter-spacing: -0.015em;
+    font-size: clamp(1.85rem, 6vw, 2.45rem);
+  }
+  .header-meta { color: #ABD2CE; letter-spacing: 0.02em; font-size: 12.5px; }
+
+  /* Sticky bar */
+  .topbar { box-shadow: var(--shadow-bar); }
+  .progress-label { font-size: 13px; }
+  .progress-track { height: 7px; }
+  .progress-bar { background: var(--coral); }
+
+  /* Pills: filters, segmented, mini buttons */
+  .filter-btn, .mini-btn { font-size: 12px; font-weight: 500; letter-spacing: 0; }
+  .filter-btn { padding: 8px 15px; }
+  .segmented { background: #EBE9E2; border-color: transparent; padding: 3px; }
+  .segmented button { font-weight: 500; letter-spacing: 0; }
+  .segmented button[aria-pressed="true"] { box-shadow: var(--shadow-sm); }
+
+  /* Section header */
+  .section-title {
+    text-transform: none; font-size: 13.5px; font-weight: 600;
+    letter-spacing: -0.005em; color: var(--ocean-dark);
+  }
+  .section-count { font-size: 12px; }
+  .section-icon { width: 30px; height: 30px; border-radius: 9px; font-size: 15px; }
+
+  /* Item cards */
+  .item { box-shadow: var(--shadow-sm); min-height: 48px; }
+  .item-label { font-size: 15px; }
+  .cb {
+    width: 21px; height: 21px; min-width: 21px;
+    border-radius: 6px; border-width: 2px;
+  }
+  .cb-check { width: 11px; height: 7px; border-left-width: 2.5px; border-bottom-width: 2.5px; }
+
+  /* Tags */
+  .tag { font-size: 10px; font-weight: 600; letter-spacing: 0.01em; padding: 3px 9px; }
+  .tag-cat { background: #E6E8E1; color: #4F605B; }
+
+  /* Add affordances */
+  .add-ghost { font-weight: 500; }
+  .add-item-btn { font-weight: 500; }
+
+  /* Snackbar */
+  .snackbar { background: var(--ocean-dark); border-radius: var(--radius-lg); }
+  .snackbar button { color: #7FE0C2; font-weight: 600; }
+
+  footer { letter-spacing: 0.02em; }
+
+  @media (hover: hover) {
+    .item:hover { background: #FCFBF8; border-color: var(--cb-border); }
+    .item.checked:hover { background: var(--check-light); }
   }
 </style>
 </head>
