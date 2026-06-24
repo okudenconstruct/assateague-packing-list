@@ -298,6 +298,7 @@
     transition: background 0.12s, border-color 0.12s;
     user-select: none;
     min-height: 44px;
+    overflow: hidden;
   }
 
   .item-main {
@@ -375,6 +376,133 @@
 
   .tag-verify { background: var(--ocean-light); color: var(--ocean-dark); }
   .tag-kids { background: var(--pony-light); color: var(--pony); }
+  .tag-cat { background: var(--dune); color: #585249; }
+
+  /* Group-by segmented control */
+  .viewbar {
+    max-width: 680px;
+    margin: 0.55rem auto 0;
+    padding: 0 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+
+  .viewbar-label {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+  }
+
+  .segmented {
+    display: inline-flex;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: 2px;
+  }
+
+  .segmented button {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    border: none;
+    background: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 6px 13px;
+    min-height: 32px;
+    border-radius: 99px;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .segmented button[aria-pressed="true"] { background: var(--ocean); color: white; }
+  .segmented button:focus-visible { outline: 2px solid var(--ocean); outline-offset: 2px; }
+
+  /* Location-group header manage buttons */
+  .loc-head {
+    display: flex;
+    align-items: stretch;
+    gap: 2px;
+    border-bottom: 1px solid var(--dune);
+    margin-bottom: 10px;
+  }
+
+  .loc-head .section-toggle { border-bottom: none; margin-bottom: 0; flex: 1; }
+
+  .loc-mini {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+
+  body.edit-mode .loc-mini { display: flex; }
+  .loc-mini:focus-visible { outline: 2px solid var(--ocean); outline-offset: -2px; }
+  .loc-delete-btn:hover { color: #B3402F; }
+
+  .loc-rename-input {
+    flex: 1;
+    min-width: 0;
+    font-family: inherit;
+    font-size: 16px;
+    padding: 7px 9px;
+    border: 1px solid var(--ocean);
+    border-radius: var(--radius);
+    margin: 4px 0;
+  }
+
+  /* Location-view item: bag selector stacked under the row */
+  .item.locview { flex-direction: column; align-items: stretch; }
+  .item.locview .item-loctop { display: flex; align-items: stretch; min-height: 44px; }
+  .item.locview .item-main { flex: 1; }
+  .item.locview .item-delete { border-radius: 0; }
+
+  .item-locctl {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-top: 1px solid var(--border);
+    padding: 6px 10px;
+    background: var(--sand);
+  }
+
+  .loc-pre {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+
+  .item-loc-select {
+    flex: 1;
+    min-width: 0;
+    font-family: inherit;
+    font-size: 16px;
+    padding: 7px 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: white;
+    color: var(--text);
+  }
+
+  .item-loc-select:focus-visible { outline: 2px solid var(--ocean); outline-offset: -1px; }
+
+  .loc-empty {
+    grid-column: 1 / -1;
+    font-size: 13px;
+    color: var(--text-muted);
+    font-style: italic;
+    padding: 6px 2px 2px;
+  }
 
   /* Delete / hide buttons */
   .item-delete {
@@ -519,6 +647,9 @@
     .item-delete:hover { color: #B3402F; background: rgba(179,64,47,0.06); }
     .add-ghost:hover, .show-hidden:hover { border-color: var(--ocean); color: var(--ocean); }
     .add-item-btn:hover { background: var(--ocean-dark); }
+    .segmented button:not([aria-pressed="true"]):hover { color: var(--ocean); }
+    .loc-mini:hover { color: var(--ocean); }
+    .loc-delete-btn:hover { color: #B3402F; }
   }
 
   /* Responsive */
@@ -552,6 +683,13 @@
     <div class="progress-track" role="progressbar" id="progress-track" aria-label="Packing progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
       <div class="progress-bar" id="progress-bar"></div>
     </div>
+  </div>
+  <div class="viewbar">
+    <span class="viewbar-label">Group by</span>
+    <span class="segmented" id="groupby" role="group" aria-label="Group items by">
+      <button type="button" data-group="category" aria-pressed="true">Category</button>
+      <button type="button" data-group="location" aria-pressed="false">Location</button>
+    </span>
   </div>
   <div class="filters" id="filters" role="group" aria-label="Filter sections"></div>
 </div>
@@ -797,19 +935,55 @@ const STORAGE_KEY = 'assateague-packed-v3';
 const LEGACY_KEY = 'assateague-packed-v2';
 const MAX_LABEL = 120;
 const MAX_CUSTOM_PER_SECTION = 50;
+const MAX_LOCATIONS = 30;
+const UNASSIGNED = '__unassigned__';
 
 const SECTION_IDS = new Set(SECTIONS.map(s => s.id));
 const ITEM_IDS = new Set(SECTIONS.flatMap(s => s.items.map(i => i.id)));
+const SECTION_BY_ID = {};
+SECTIONS.forEach(s => { SECTION_BY_ID[s.id] = s; });
 
-let state = { checked: {}, custom: {}, hidden: {}, collapsed: {}, filter: 'all', editMode: false };
+// Starter packing locations (editable: rename/add/delete in the app). Seeded
+// once on first load; the user can split "Family bags" into per-person bags.
+const DEFAULT_LOCATIONS = [
+  { id: 'loc-mybackpack', label: 'My backpack (Peak Design 45L)' },
+  { id: 'loc-mytoiletry', label: 'My toiletry bag' },
+  { id: 'loc-familybags', label: 'Family bags (per person)' },
+  { id: 'loc-familytoiletry', label: 'Family toiletry bags' },
+  { id: 'loc-trunk', label: 'Car trunk' },
+];
+
+// Smart pre-fill: a default location per category, with item-level overrides
+// for valuables / electronics / personal carry that ride in my backpack.
+const SECTION_DEFAULT_LOC = {
+  beach: 'loc-trunk', bike: 'loc-trunk', hiking: 'loc-trunk', kitchen: 'loc-trunk',
+  sleeping: 'loc-trunk', health: 'loc-mybackpack', hygiene: 'loc-familytoiletry',
+  clothing: 'loc-familybags', camp: 'loc-trunk', camper: 'loc-trunk',
+};
+const ITEM_LOC_OVERRIDE = {
+  'beach-phonepouch': 'loc-mybackpack', 'beach-drybags': 'loc-mybackpack',
+  'hike-binoculars': 'loc-mybackpack', 'hike-maps': 'loc-mybackpack',
+  'camp-powerbanks': 'loc-mybackpack', 'camp-chargers': 'loc-mybackpack',
+  'camp-camera': 'loc-mybackpack', 'camp-tablets': 'loc-mybackpack',
+  'camp-contacts': 'loc-mybackpack', 'camp-payment': 'loc-mybackpack',
+  'camp-confirmation': 'loc-mybackpack', 'hlth-meds': 'loc-mybackpack',
+  'hlth-firstaid': 'loc-mybackpack', 'hyg-glasses': 'loc-mytoiletry',
+};
+
+function defaultLocFor(itemId, secId) {
+  return ITEM_LOC_OVERRIDE[itemId] || SECTION_DEFAULT_LOC[secId] || UNASSIGNED;
+}
+
+let state = { checked: {}, custom: {}, hidden: {}, collapsed: {}, location: {}, locations: [], groupBy: 'category', filter: 'all', editMode: false };
 let storageWarned = false;
 
 function load() {
   let raw = null;
-  try { raw = localStorage.getItem(STORAGE_KEY); } catch (e) { warnStorage(); return; }
+  try { raw = localStorage.getItem(STORAGE_KEY); } catch (e) { warnStorage(); seedLocations(); return; }
   if (raw) {
     try {
       const p = JSON.parse(raw);
+      let hadLocations = false;
       if (p && typeof p === 'object') {
         if (p.checked && typeof p.checked === 'object' && !Array.isArray(p.checked)) {
           for (const k in p.checked) if (p.checked[k] === true) state.checked[k] = true;
@@ -828,19 +1002,51 @@ function load() {
           for (const k in p.hidden) if (p.hidden[k] === true && ITEM_IDS.has(k)) state.hidden[k] = true;
         }
         if (p.collapsed && typeof p.collapsed === 'object' && !Array.isArray(p.collapsed)) {
-          for (const k in p.collapsed) if (p.collapsed[k] === true && SECTION_IDS.has(k)) state.collapsed[k] = true;
+          for (const k in p.collapsed) if (p.collapsed[k] === true && typeof k === 'string') state.collapsed[k] = true;
         }
+        if ('locations' in p) {
+          hadLocations = true;
+          if (Array.isArray(p.locations)) {
+            state.locations = p.locations
+              .filter(l => l && typeof l.id === 'string' && typeof l.label === 'string')
+              .slice(0, MAX_LOCATIONS)
+              .map(l => ({ id: l.id, label: l.label.slice(0, MAX_LABEL) }));
+          }
+        }
+        if (p.location && typeof p.location === 'object' && !Array.isArray(p.location)) {
+          for (const k in p.location) if (typeof p.location[k] === 'string') state.location[k] = p.location[k];
+        }
+        if (p.groupBy === 'location' || p.groupBy === 'category') state.groupBy = p.groupBy;
       }
+      if (!hadLocations) seedLocations();
     } catch (e) {
       // Corrupt v3: discard it and fall through to the v2 migration below,
       // which may still recover the pre-rewrite checkmarks.
       try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
       state.checked = {}; state.custom = {}; state.hidden = {}; state.collapsed = {};
+      state.location = {}; state.locations = [];
       migrateV2();
+      seedLocations();
     }
     return;
   }
   migrateV2();
+  seedLocations();
+}
+
+// Seed the editable location list + smart per-item assignments. Only fills in
+// what isn't already set, so it is safe to call after a v2/v3 load that has no
+// location data without clobbering anything the user later edits.
+function seedLocations() {
+  if (!state.locations.length) state.locations = DEFAULT_LOCATIONS.map(l => ({ id: l.id, label: l.label }));
+  const assign = (id, secId) => {
+    if (state.location[id]) return;
+    const loc = defaultLocFor(id, secId);
+    if (loc !== UNASSIGNED) state.location[id] = loc;
+  };
+  SECTIONS.forEach(sec => sec.items.forEach(it => assign(it.id, sec.id)));
+  for (const sid in state.custom) (state.custom[sid] || []).forEach(ci => assign(ci.id, sid));
+  save();
 }
 
 function migrateV2() {
@@ -876,6 +1082,9 @@ function save() {
       custom: state.custom,
       hidden: state.hidden,
       collapsed: state.collapsed,
+      location: state.location,
+      locations: state.locations,
+      groupBy: state.groupBy,
     }));
   } catch (e) { warnStorage(); }
 }
@@ -915,10 +1124,41 @@ function sectionStats(sec) {
   return { total, done, hiddenCount };
 }
 
+// Every visible (non-hidden) item across all sections, built-in and custom,
+// each tagged with its section id — the source list for the location view.
+function allLiveItems() {
+  const out = [];
+  SECTIONS.forEach(sec => {
+    sec.items.forEach(it => { if (!state.hidden[it.id]) out.push({ item: it, secId: sec.id, isCustom: false }); });
+    (state.custom[sec.id] || []).forEach(ci => out.push({ item: ci, secId: sec.id, isCustom: true }));
+  });
+  return out;
+}
+
+// An item's location, treating a dangling reference (location since deleted)
+// as Unassigned so deleting a bag cleanly drops its items into Unassigned.
+function effectiveLoc(itemId) {
+  const l = state.location[itemId];
+  if (l && l !== UNASSIGNED && state.locations.some(x => x.id === l)) return l;
+  return UNASSIGNED;
+}
+
+function locLabel(locId) {
+  if (locId === UNASSIGNED) return 'Unassigned';
+  const l = state.locations.find(x => x.id === locId);
+  return l ? l.label : 'Unassigned';
+}
+
+function catLabel(secId) {
+  const sec = SECTION_BY_ID[secId];
+  return sec ? sec.short : '';
+}
+
 function buildItem(sec, item, isCustom) {
   const row = el('div', 'item' + (state.checked[item.id] ? ' checked' : ''));
   row.dataset.key = item.id;
   row.dataset.section = sec.id;
+  row.dataset.group = sec.id;
   if (isCustom) row.dataset.custom = '1';
 
   const main = el('div', 'item-main');
@@ -964,6 +1204,7 @@ function buildAddRow(sec) {
 function buildSection(sec) {
   const s = el('section', 'section' + (state.collapsed[sec.id] ? ' collapsed' : ''));
   s.dataset.section = sec.id;
+  s.dataset.group = sec.id;
   s.setAttribute('aria-labelledby', 'sec-' + sec.id);
 
   const h = el('h2', 'section-h');
@@ -1004,17 +1245,157 @@ function buildSection(sec) {
 
 function renderList() {
   const container = document.getElementById('main-list');
-  const visible = SECTIONS.filter(sec => state.filter === 'all' || state.filter === sec.id);
-  container.replaceChildren(...visible.map(buildSection));
+  if (state.groupBy === 'location') {
+    renderLocationView(container);
+  } else {
+    const visible = SECTIONS.filter(sec => state.filter === 'all' || state.filter === sec.id);
+    container.replaceChildren(...visible.map(buildSection));
+  }
   updateProgress();
 }
 
-function updateSectionCount(secId) {
-  const sec = SECTIONS.find(s => s.id === secId);
-  const elc = document.getElementById('count-' + secId);
-  if (sec && elc) {
-    const stats = sectionStats(sec);
-    elc.textContent = stats.done + '/' + stats.total;
+// --- Location view ---
+
+function buildLocItem(secId, item, isCustom) {
+  const row = el('div', 'item locview' + (state.checked[item.id] ? ' checked' : ''));
+  row.dataset.key = item.id;
+  row.dataset.section = secId;
+  row.dataset.group = effectiveLoc(item.id);
+  if (isCustom) row.dataset.custom = '1';
+
+  const top = el('div', 'item-loctop');
+  const main = el('div', 'item-main');
+  main.setAttribute('role', 'checkbox');
+  main.setAttribute('aria-checked', String(!!state.checked[item.id]));
+  main.tabIndex = 0;
+  const cb = el('div', 'cb');
+  cb.appendChild(el('div', 'cb-check'));
+  main.appendChild(cb);
+  main.appendChild(el('span', 'item-label', item.label));
+  main.appendChild(el('span', 'tag tag-cat', catLabel(secId)));
+  if (!isCustom && item.tag === 'verify') main.appendChild(el('span', 'tag tag-verify', 'verify'));
+  if (!isCustom && item.tag === 'kids') main.appendChild(el('span', 'tag tag-kids', 'kids'));
+  top.appendChild(main);
+
+  const del = el('button', isCustom ? 'item-delete' : 'item-delete item-hide', '×');
+  del.type = 'button';
+  del.setAttribute('aria-label', (isCustom ? 'Remove ' : 'Hide ') + item.label);
+  top.appendChild(del);
+  row.appendChild(top);
+
+  const ctl = el('div', 'item-locctl');
+  ctl.appendChild(el('span', 'loc-pre', 'BAG'));
+  const sel = el('select', 'item-loc-select');
+  sel.setAttribute('aria-label', 'Bag for ' + item.label);
+  const cur = effectiveLoc(item.id);
+  state.locations.forEach(l => {
+    const o = el('option', null, l.label);
+    o.value = l.id;
+    if (l.id === cur) o.selected = true;
+    sel.appendChild(o);
+  });
+  const ou = el('option', null, 'Unassigned');
+  ou.value = UNASSIGNED;
+  if (cur === UNASSIGNED) ou.selected = true;
+  sel.appendChild(ou);
+  ctl.appendChild(sel);
+  row.appendChild(ctl);
+  return row;
+}
+
+function buildLocGroup(group) {
+  const collapsed = !!state.collapsed[group.id];
+  const s = el('section', 'section' + (collapsed ? ' collapsed' : ''));
+  s.dataset.group = group.id;
+  s.setAttribute('aria-labelledby', 'sec-' + group.id);
+
+  const h = el('h2', 'section-h loc-head');
+  const tog = el('button', 'section-toggle');
+  tog.type = 'button';
+  tog.setAttribute('aria-expanded', String(!collapsed));
+  tog.setAttribute('aria-controls', 'grid-' + group.id);
+  const ic = el('span', 'section-icon', group.id === UNASSIGNED ? '❓' : '\u{1F9F3}');
+  ic.setAttribute('aria-hidden', 'true');
+  tog.appendChild(ic);
+  const title = el('span', 'section-title', group.label);
+  title.id = 'sec-' + group.id;
+  tog.appendChild(title);
+  const done = group.records.filter(r => state.checked[r.item.id]).length;
+  const count = el('span', 'section-count', done + '/' + group.records.length);
+  count.id = 'count-' + group.id;
+  tog.appendChild(count);
+  tog.appendChild(el('span', 'chevron'));
+  h.appendChild(tog);
+
+  if (group.id !== UNASSIGNED) {
+    const ren = el('button', 'loc-mini loc-rename-btn', '✎');
+    ren.type = 'button';
+    ren.dataset.loc = group.id;
+    ren.setAttribute('aria-label', 'Rename ' + group.label);
+    h.appendChild(ren);
+    const del = el('button', 'loc-mini loc-delete-btn', '×');
+    del.type = 'button';
+    del.dataset.loc = group.id;
+    del.setAttribute('aria-label', 'Delete ' + group.label);
+    h.appendChild(del);
+  }
+  s.appendChild(h);
+
+  const grid = el('div', 'item-grid');
+  grid.id = 'grid-' + group.id;
+  grid.setAttribute('role', 'group');
+  grid.setAttribute('aria-labelledby', 'sec-' + group.id);
+  group.records.forEach(r => grid.appendChild(buildLocItem(r.secId, r.item, r.isCustom)));
+  if (!group.records.length) {
+    grid.appendChild(el('div', 'loc-empty', 'No items here yet — assign items from the BAG menu on any item.'));
+  }
+  s.appendChild(grid);
+  return s;
+}
+
+function buildAddLocRow() {
+  const wrap = el('div', 'add-row add-loc-row');
+  const ghost = el('button', 'add-ghost add-loc-ghost', '+ Add a bag / location');
+  ghost.type = 'button';
+  wrap.appendChild(ghost);
+  const live = el('div', 'add-live');
+  live.hidden = true;
+  const input = el('input', 'add-item-input');
+  input.type = 'text';
+  input.maxLength = MAX_LABEL;
+  input.placeholder = 'Bag or location name...';
+  input.setAttribute('aria-label', 'New bag or location name');
+  live.appendChild(input);
+  const btn = el('button', 'add-item-btn add-loc-btn', 'Add');
+  btn.type = 'button';
+  live.appendChild(btn);
+  wrap.appendChild(live);
+  return wrap;
+}
+
+function renderLocationView(container) {
+  const byId = {};
+  const groups = state.locations.map(l => { const g = { id: l.id, label: l.label, records: [] }; byId[l.id] = g; return g; });
+  const unassigned = { id: UNASSIGNED, label: 'Unassigned', records: [] };
+  allLiveItems().forEach(rec => { (byId[effectiveLoc(rec.item.id)] || unassigned).records.push(rec); });
+
+  let all = groups.concat([unassigned]);
+  if (state.filter !== 'all') all = all.filter(g => g.id === state.filter);
+  else all = all.filter(g => g.id !== UNASSIGNED || g.records.length);
+
+  container.replaceChildren(...all.map(buildLocGroup), buildAddLocRow());
+}
+
+function updateSectionCount(groupId) {
+  const elc = document.getElementById('count-' + groupId);
+  if (!elc) return;
+  if (state.groupBy === 'category') {
+    const sec = SECTION_BY_ID[groupId];
+    if (sec) { const stats = sectionStats(sec); elc.textContent = stats.done + '/' + stats.total; }
+  } else {
+    const recs = allLiveItems().filter(r => effectiveLoc(r.item.id) === groupId);
+    const done = recs.filter(r => state.checked[r.item.id]).length;
+    elc.textContent = done + '/' + recs.length;
   }
 }
 
@@ -1041,7 +1422,7 @@ function toggleItem(row) {
   const isChecked = !!state.checked[id];
   row.classList.toggle('checked', isChecked);
   row.querySelector('.item-main').setAttribute('aria-checked', String(isChecked));
-  updateSectionCount(row.dataset.section);
+  updateSectionCount(row.dataset.group);
   updateProgress();
 }
 
@@ -1091,17 +1472,21 @@ function removeCustomItem(row) {
   if (idx === -1) return;
   const removed = list.splice(idx, 1)[0];
   const wasChecked = !!state.checked[id];
+  const prevLoc = state.location[id];
   delete state.checked[id];
+  delete state.location[id];
   save();
   const hadFocus = row.contains(document.activeElement);
+  const groupId = row.dataset.group;
   row.remove();
-  updateSectionCount(secId);
+  updateSectionCount(groupId);
   updateProgress();
   announce('Removed ' + removed.label);
   showSnack('Removed “' + removed.label + '”', 'Undo', () => {
     if (!state.custom[secId]) state.custom[secId] = [];
     state.custom[secId].splice(Math.min(idx, state.custom[secId].length), 0, removed);
     if (wasChecked) state.checked[id] = true;
+    if (prevLoc) state.location[id] = prevLoc;
     save();
     renderList();
   });
@@ -1139,10 +1524,10 @@ function unhideSection(secId) {
 }
 
 function toggleCollapse(sectionEl) {
-  const secId = sectionEl.dataset.section;
-  const collapsed = !state.collapsed[secId];
-  if (collapsed) state.collapsed[secId] = true;
-  else delete state.collapsed[secId];
+  const gid = sectionEl.dataset.group;
+  const collapsed = !state.collapsed[gid];
+  if (collapsed) state.collapsed[gid] = true;
+  else delete state.collapsed[gid];
   save();
   sectionEl.classList.toggle('collapsed', collapsed);
   sectionEl.querySelector('.section-toggle').setAttribute('aria-expanded', String(!collapsed));
@@ -1177,6 +1562,8 @@ function submitAdd(addRow) {
   if (!state.custom[secId]) state.custom[secId] = [];
   const item = { id: 'c-' + secId + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7), label: label };
   state.custom[secId].push(item);
+  const defLoc = defaultLocFor(item.id, secId);
+  if (defLoc !== UNASSIGNED) state.location[item.id] = defLoc;
   save();
   const row = buildItem(sec, item, true);
   addRow.parentNode.insertBefore(row, addRow);
@@ -1199,7 +1586,13 @@ function buildFilters() {
     b.setAttribute('aria-pressed', String(state.filter === id));
     return b;
   };
-  wrap.replaceChildren(mk('all', 'All'), ...SECTIONS.map(s => mk(s.id, s.short)));
+  if (state.groupBy === 'location') {
+    wrap.setAttribute('aria-label', 'Filter locations');
+    wrap.replaceChildren(mk('all', 'All'), ...state.locations.map(l => mk(l.id, l.label)), mk(UNASSIGNED, 'Unassigned'));
+  } else {
+    wrap.setAttribute('aria-label', 'Filter sections');
+    wrap.replaceChildren(mk('all', 'All'), ...SECTIONS.map(s => mk(s.id, s.short)));
+  }
 }
 
 function setFilter(filter) {
@@ -1208,8 +1601,91 @@ function setFilter(filter) {
     b.setAttribute('aria-pressed', String(b.dataset.filter === filter));
   });
   renderList();
-  const sec = SECTIONS.find(s => s.id === filter);
-  announce(sec ? 'Showing ' + sec.label : 'Showing all sections');
+  if (filter === 'all') { announce('Showing all'); return; }
+  announce('Showing ' + (state.groupBy === 'location' ? locLabel(filter) : (SECTION_BY_ID[filter] ? SECTION_BY_ID[filter].label : filter)));
+}
+
+function setGroupBy(mode) {
+  if (mode === state.groupBy) return;
+  state.groupBy = mode;
+  state.filter = 'all';
+  save();
+  document.querySelectorAll('#groupby button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.group === mode)));
+  buildFilters();
+  renderList();
+  announce(mode === 'location' ? 'Grouped by packing location' : 'Grouped by category');
+}
+
+function reassignLocation(itemId, locId) {
+  if (locId === UNASSIGNED) delete state.location[itemId];
+  else state.location[itemId] = locId;
+  save();
+  renderList();
+  const row = [...document.querySelectorAll('.item')].find(r => r.dataset.key === itemId);
+  if (row) { const s = row.querySelector('.item-loc-select'); if (s) s.focus(); }
+  announce('Moved to ' + locLabel(locId));
+}
+
+function submitAddLoc(addRow) {
+  const input = addRow.querySelector('.add-item-input');
+  const label = input.value.trim().slice(0, MAX_LABEL);
+  if (!label) { input.focus(); return; }
+  if (state.locations.length >= MAX_LOCATIONS) { showSnack('You already have the maximum number of locations.'); return; }
+  const id = 'loc-c-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7);
+  state.locations.push({ id: id, label: label });
+  save();
+  buildFilters();
+  renderList();
+  announce('Added location ' + label);
+  const ghost = document.querySelector('.add-loc-row .add-loc-ghost');
+  if (ghost) ghost.focus();
+}
+
+function deleteLocation(locId) {
+  const idx = state.locations.findIndex(l => l.id === locId);
+  if (idx === -1) return;
+  const removed = state.locations[idx];
+  state.locations.splice(idx, 1);
+  if (state.filter === locId) state.filter = 'all';
+  save();
+  buildFilters();
+  renderList();
+  announce('Deleted ' + removed.label + '. Its items are now unassigned.');
+  showSnack('Deleted “' + removed.label + '”', 'Undo', () => {
+    state.locations.splice(Math.min(idx, state.locations.length), 0, removed);
+    save();
+    buildFilters();
+    renderList();
+  });
+}
+
+function startRenameLocation(locId) {
+  const sectionEl = [...document.querySelectorAll('.section')].find(s => s.dataset.group === locId);
+  const loc = state.locations.find(l => l.id === locId);
+  if (!sectionEl || !loc) return;
+  const head = sectionEl.querySelector('.loc-head');
+  const input = el('input', 'loc-rename-input');
+  input.value = loc.label;
+  input.maxLength = MAX_LABEL;
+  input.setAttribute('aria-label', 'Rename location');
+  head.replaceChildren(input);
+  input.focus();
+  input.select();
+  let done = false;
+  const commit = (keep) => {
+    if (done) return;
+    done = true;
+    if (keep) {
+      const v = input.value.trim().slice(0, MAX_LABEL);
+      if (v) { loc.label = v; save(); buildFilters(); }
+    }
+    renderList();
+  };
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); commit(true); }
+    else if (e.key === 'Escape') { e.preventDefault(); commit(false); }
+  });
+  input.addEventListener('blur', () => commit(true));
 }
 
 let resetTimer = null;
@@ -1248,7 +1724,7 @@ function toggleEditMode() {
   btn.textContent = state.editMode ? 'done editing' : 'edit list';
   document.body.classList.toggle('edit-mode', state.editMode);
   announce(state.editMode
-    ? 'Edit mode on — use the × buttons to hide items you are not bringing'
+    ? 'Edit mode on — hide items with ×, or rename and delete locations'
     : 'Edit mode off');
 }
 
@@ -1263,14 +1739,22 @@ document.getElementById('main-list').addEventListener('click', e => {
       else hideBuiltinItem(row);
       return;
     }
+    if (btn.classList.contains('loc-delete-btn')) { deleteLocation(btn.dataset.loc); return; }
+    if (btn.classList.contains('loc-rename-btn')) { startRenameLocation(btn.dataset.loc); return; }
     if (btn.classList.contains('section-toggle')) { toggleCollapse(btn.closest('.section')); return; }
     if (btn.classList.contains('show-hidden')) { unhideSection(btn.dataset.section); return; }
     if (btn.classList.contains('add-ghost')) { openAdd(btn.closest('.add-row')); return; }
+    if (btn.classList.contains('add-loc-btn')) { submitAddLoc(btn.closest('.add-row')); return; }
     if (btn.classList.contains('add-item-btn')) { submitAdd(btn.closest('.add-row')); return; }
     return;
   }
   const main = e.target.closest('.item-main');
   if (main) toggleItem(main.closest('.item'));
+});
+
+document.getElementById('main-list').addEventListener('change', e => {
+  const sel = e.target.closest('.item-loc-select');
+  if (sel) reassignLocation(sel.closest('.item').dataset.key, sel.value);
 });
 
 document.getElementById('main-list').addEventListener('keydown', e => {
@@ -1280,10 +1764,16 @@ document.getElementById('main-list').addEventListener('keydown', e => {
   }
   if (e.key !== 'Enter' && e.key !== ' ') return;
   if (e.target.classList.contains('add-item-input')) {
-    if (e.key === 'Enter') { e.preventDefault(); submitAdd(e.target.closest('.add-row')); }
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const ar = e.target.closest('.add-row');
+      if (ar.classList.contains('add-loc-row')) submitAddLoc(ar);
+      else submitAdd(ar);
+    }
     return;
   }
   if (e.target.closest('button')) return; // native buttons activate themselves
+  if (e.target.classList.contains('item-loc-select')) return; // native select handles keys
   const main = e.target.closest('.item-main');
   if (main) { e.preventDefault(); toggleItem(main.closest('.item')); }
 });
@@ -1293,12 +1783,18 @@ document.getElementById('filters').addEventListener('click', e => {
   if (b) setFilter(b.dataset.filter);
 });
 
+document.getElementById('groupby').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (b) setGroupBy(b.dataset.group);
+});
+
 document.getElementById('reset-btn').addEventListener('click', handleReset);
 document.getElementById('edit-btn').addEventListener('click', toggleEditMode);
 
 // --- Boot ---
 
 load();
+document.querySelectorAll('#groupby button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.group === state.groupBy)));
 buildFilters();
 renderList();
 
