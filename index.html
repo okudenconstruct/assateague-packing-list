@@ -732,13 +732,18 @@
     font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
     color: var(--cyan); font-weight: 600;
   }
+  @font-face {
+    font-family: 'Cyberway Riders';
+    src: url('cyberway-riders.otf') format('opentype');
+    font-display: swap;
+  }
   header h1 {
     position: relative;
     display: inline-block;
     align-self: center;
-    font-family: var(--font-tech);
+    font-family: 'Cyberway Riders', var(--font-tech);
     font-style: normal; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.04em; font-size: clamp(1.95rem, 6.5vw, 2.7rem);
+    letter-spacing: 0.02em; font-size: clamp(2.1rem, 7.4vw, 3.1rem);
     color: var(--yellow);
     text-shadow: 0 0 20px rgba(252,238,10,0.5), 0 0 2px rgba(252,238,10,0.8);
     animation: cp-flicker 6s infinite;
