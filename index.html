@@ -1249,22 +1249,16 @@ let storageWarned = false;
 let cloudPush = null;
 let applyingRemote = false;
 
-// Resolve the shared-list id: ?list= in the URL wins, else a remembered id,
-// else a fresh random one. The id is reflected back into the URL so the page
-// is shareable, and remembered so this device rejoins the same list next time.
-function resolveListId() {
-  let url; try { url = new URL(location.href); } catch (e) { return 'local'; }
-  let id = url.searchParams.get('list');
-  try { if (!id) id = localStorage.getItem('packing-list-id'); } catch (e) {}
-  if (!id) { id = 'l'; for (let i = 0; i < 16; i++) id += '0123456789abcdefghijklmnopqrstuvwxyz'[Math.floor(Math.random() * 36)]; }
-  try { localStorage.setItem('packing-list-id', id); } catch (e) {}
-  if (url.searchParams.get('list') !== id) {
-    url.searchParams.set('list', id);
-    try { history.replaceState(null, '', url.toString()); } catch (e) {}
-  }
-  return id;
-}
-const LIST_ID = resolveListId();
+// One shared family list, so every device that opens the app auto-syncs to it
+// with no link needed. (Kept deliberately simple — the URL is the same for all.)
+const LIST_ID = 'assateague-family';
+
+// One-time migration flag (per list): the first time this device meets an
+// existing shared doc, it UNION-merges instead of overwriting, so no device's
+// existing checks are lost when phone + laptop first converge.
+let cloudMigrated = false;
+try { cloudMigrated = localStorage.getItem('packing-merged-' + LIST_ID) === '1'; } catch (e) {}
+function markCloudMigrated() { cloudMigrated = true; try { localStorage.setItem('packing-merged-' + LIST_ID, '1'); } catch (e) {} }
 
 function load() {
   let raw = null;
@@ -1431,6 +1425,55 @@ function applyRemote(data) {
     state.location = loc;
 
     if (state.filter !== 'all' && state.groupBy === 'location' && state.filter !== UNASSIGNED && !state.locations.some(l => l.id === state.filter)) state.filter = 'all';
+
+    saveLocal();
+    buildFilters();
+    renderList();
+  } finally {
+    applyingRemote = false;
+  }
+}
+
+// One-time UNION merge of a remote snapshot into local state (used the first
+// time this device meets the shared doc), so phone + laptop checks combine
+// instead of one overwriting the other. After this, normal last-write-wins.
+function mergeRemote(data) {
+  if (!data || typeof data !== 'object') return;
+  applyingRemote = true;
+  try {
+    if (data.checked && typeof data.checked === 'object' && !Array.isArray(data.checked))
+      for (const k in data.checked) if (data.checked[k] === true) state.checked[k] = true;
+
+    if (data.hidden && typeof data.hidden === 'object' && !Array.isArray(data.hidden))
+      for (const k in data.hidden) if (data.hidden[k] === true && ITEM_IDS.has(k)) state.hidden[k] = true;
+
+    if (data.custom && typeof data.custom === 'object' && !Array.isArray(data.custom))
+      for (const sid in data.custom) {
+        if (!SECTION_IDS.has(sid) || !Array.isArray(data.custom[sid])) continue;
+        if (!state.custom[sid]) state.custom[sid] = [];
+        const have = new Set(state.custom[sid].map(it => it.id));
+        data.custom[sid].forEach(it => {
+          if (it && typeof it.id === 'string' && typeof it.label === 'string' && !ITEM_IDS.has(it.id) && !have.has(it.id)) {
+            state.custom[sid].push({ id: it.id, label: it.label.slice(0, MAX_LABEL) });
+            have.add(it.id);
+          }
+        });
+        state.custom[sid] = state.custom[sid].slice(0, MAX_CUSTOM_PER_SECTION);
+      }
+
+    if (Array.isArray(data.locations)) {
+      const have = new Set(state.locations.map(l => l.id));
+      data.locations.forEach(l => {
+        if (l && typeof l.id === 'string' && typeof l.label === 'string' && !have.has(l.id)) {
+          state.locations.push({ id: l.id, label: l.label.slice(0, MAX_LABEL) });
+          have.add(l.id);
+        }
+      });
+      state.locations = state.locations.slice(0, MAX_LOCATIONS);
+    }
+
+    if (data.location && typeof data.location === 'object' && !Array.isArray(data.location))
+      for (const k in data.location) if (typeof data.location[k] === 'string' && !state.location[k]) state.location[k] = data.location[k];
 
     saveLocal();
     buildFilters();
@@ -2143,7 +2186,7 @@ document.getElementById('reset-btn').addEventListener('click', handleReset);
 document.getElementById('edit-btn').addEventListener('click', toggleEditMode);
 
 document.getElementById('share-btn').addEventListener('click', async () => {
-  const url = location.href;
+  const url = location.origin + location.pathname;
   try {
     if (navigator.share) { await navigator.share({ title: 'Assateague Packing List', url }); return; }
   } catch (e) { return; }
@@ -2163,6 +2206,9 @@ window.__packing = {
   listId: LIST_ID,
   getData: cloudData,
   applyRemote: applyRemote,
+  mergeRemote: mergeRemote,
+  needsMigration: function () { return !cloudMigrated; },
+  markMigrated: markCloudMigrated,
   registerPush: function (fn) { cloudPush = fn; },
 };
 
@@ -2201,15 +2247,22 @@ try {
   };
   P.registerPush(() => { clearTimeout(timer); timer = setTimeout(push, 600); });
 
-  // Live listener: ignore our own echoes; seed the doc from local if empty;
-  // otherwise apply the remote snapshot (last-write-wins).
+  // Live listener: ignore our own echoes. If the doc is empty, seed it from
+  // local. On this device's FIRST contact with an existing shared doc, union-
+  // merge (so no one's checks are lost as devices converge) and push the merge;
+  // after that, apply remote snapshots normally (last-write-wins).
   let seeded = false;
   onSnapshot(ref, (snap) => {
     if (snap.metadata.hasPendingWrites) { seeded = true; return; }
-    if (!snap.exists()) { if (!seeded) { seeded = true; push(); } return; }
+    if (!snap.exists()) {
+      if (!seeded) { seeded = true; P.markMigrated(); push(); }
+      return;
+    }
     seeded = true;
     const d = snap.data();
-    if (d && d.state) P.applyRemote(d.state);
+    if (!d || !d.state) return;
+    if (P.needsMigration()) { P.mergeRemote(d.state); P.markMigrated(); push(); }
+    else { P.applyRemote(d.state); }
   }, (err) => console.warn("cloud listen failed", err));
 } catch (e) {
   console.warn("Firebase init failed — running local-only", e);
