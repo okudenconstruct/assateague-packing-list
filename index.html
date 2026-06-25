@@ -1387,6 +1387,13 @@ function cloudData() {
 // localStorage WITHOUT re-pushing, and re-render. Last-write-wins by design.
 function applyRemote(data) {
   if (!data || typeof data !== 'object') return;
+  // Safety net: never let an EMPTY remote wipe a device that still has checks.
+  // Re-push local instead — this also auto-restores the shared list if it was
+  // ever reset to empty. Trade-off: unchecking the very last item won't sync.
+  const remoteChecked = (data.checked && typeof data.checked === 'object' && !Array.isArray(data.checked))
+    ? Object.keys(data.checked).filter(k => data.checked[k] === true).length : 0;
+  const localChecked = Object.keys(state.checked).filter(k => state.checked[k] === true).length;
+  if (remoteChecked === 0 && localChecked > 0) { if (cloudPush) cloudPush(); return; }
   applyingRemote = true;
   try {
     const checked = {};
@@ -2221,7 +2228,7 @@ if ('serviceWorker' in navigator) {
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, doc, onSnapshot, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { initializeFirestore, doc, onSnapshot, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC8U4tSfvc0boSu20ghB5YrVUsODjhIs_E",
@@ -2235,7 +2242,10 @@ const firebaseConfig = {
 try {
   const P = window.__packing;
   const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+  // experimentalAutoDetectLongPolling lets Firestore fall back to long-polling
+  // when a restrictive network / corporate proxy blocks its default streaming
+  // transport (common on work laptops) — fixes "syncs on phone, not on laptop".
+  const db = initializeFirestore(app, { experimentalAutoDetectLongPolling: true });
   const ref = doc(db, "sharedLists", P.listId);
   const clientId = Math.random().toString(36).slice(2) + Date.now().toString(36);
 
