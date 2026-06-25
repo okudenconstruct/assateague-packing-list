@@ -536,8 +536,7 @@
     outline-offset: -2px;
   }
 
-  .item-hide { display: none; }
-  body.edit-mode .item-hide { display: block; }
+  .item-hide { display: block; }
 
   .show-hidden {
     grid-column: 1 / -1;
@@ -972,129 +971,30 @@
 <script>
 const SECTIONS = [
   {
-    id: 'beach',
-    label: 'Beach & swimming',
-    short: 'Beach',
-    icon: '\u{1F30A}',
+    id: 'clothing',
+    label: 'Clothing',
+    short: 'Clothing',
+    icon: '\u{1F455}',
     items: [
-      { id: 'beach-canopy', label: 'EZ-up canopy tent', tag: null },
-      { id: 'beach-anchors', label: 'Sand anchors / sandbag weights + extra guy lines for canopy', tag: null },
-      { id: 'beach-umbrella', label: 'Beach umbrella with screw-in sand anchor (second shade)', tag: null },
-      { id: 'beach-towels', label: 'Beach towels (2 per person = 10)', tag: null },
+      { id: 'clo-tshirts', label: 'T-shirts (5–6 per person — laundry pods packed)', tag: null },
+      { id: 'clo-shorts', label: 'Shorts (2–3 per person)', tag: null },
+      { id: 'clo-pants', label: 'Long pants (1–2 per person)', tag: null },
+      { id: 'clo-jacket', label: 'Light jacket or hoodie (per person)', tag: null },
+      { id: 'clo-rainjacket', label: 'Rain jacket — packable (per person)', tag: null },
+      { id: 'clo-underwear', label: 'Underwear & socks (1 per day + 2 extra per person)', tag: null },
+      { id: 'clo-pajamas', label: 'Pajamas (per person)', tag: null },
       { id: 'beach-swimsuits', label: 'Swimsuits (2 per person)', tag: null },
-      { id: 'beach-sunscreen', label: 'Sunscreen SPF 50+ (all activities — bring plenty)', tag: null },
       { id: 'beach-sunshirts', label: 'Sun shirts / rash guards (kids & adults)', tag: null },
-      { id: 'beach-chairs', label: 'Beach chairs (5)', tag: null },
-      { id: 'beach-bag', label: 'Beach bag or tote', tag: null },
-      { id: 'beach-sandtoys', label: 'Sand toys & buckets', tag: 'kids' },
-      { id: 'beach-boogie', label: 'Boogie boards (2–3)', tag: 'kids' },
-      { id: 'beach-goggles', label: 'Swim goggles (per kid)', tag: 'kids' },
-      { id: 'beach-blanket', label: 'Big beach blanket / ground sheet', tag: null },
-      { id: 'beach-powder', label: 'Baby powder (rubs dry sand off skin)', tag: null },
-      { id: 'beach-wagon', label: 'Beach wagon with balloon tires (haul gear over the dune)', tag: null },
-      { id: 'beach-phonepouch', label: 'Waterproof phone pouch', tag: null },
+      { id: 'clo-flipflops', label: 'Flip flops / camp shoes (double as shower shoes)', tag: null },
       { id: 'beach-watershoes', label: 'Water shoes / sandals (per person)', tag: null },
-      { id: 'beach-drybags', label: 'Dry bags for valuables', tag: null },
-      { id: 'beach-games', label: 'Frisbee / football / paddle ball', tag: null },
-    ]
-  },
-  {
-    id: 'bike',
-    label: 'Biking',
-    short: 'Biking',
-    icon: '\u{1F6B2}',
-    items: [
-      { id: 'bike-bikes', label: 'Bikes (5) + car rack — or reserve rentals (Assateague Outfitters; confirm days & hours)', tag: 'verify' },
-      { id: 'bike-helmets', label: 'Bike helmets (all 5)', tag: null },
-      { id: 'bike-locks', label: 'Bike lock(s)', tag: null },
-      { id: 'bike-pump', label: 'Tire pump (hand pump)', tag: null },
-      { id: 'bike-repair', label: 'Basic repair kit (patches, multi-tool)', tag: null },
-      { id: 'bike-lights', label: 'Bike lights (front & rear)', tag: null },
-      { id: 'bike-cargo', label: 'Cargo rack or handlebar bag (fits our bikes?)', tag: 'verify' },
-    ]
-  },
-  {
-    id: 'hiking',
-    label: 'Hiking & wildlife',
-    short: 'Hiking',
-    icon: '\u{1F434}',
-    items: [
       { id: 'hike-shoes', label: 'Closed-toe trail shoes (per person)', tag: null },
-      { id: 'hike-binoculars', label: 'Binoculars (ponies & birds)', tag: null },
-      { id: 'hike-fieldguide', label: 'Field guide — Maryland shorebirds', tag: null },
-      { id: 'hike-permethrin', label: 'Permethrin spray for clothing (pre-treat at home)', tag: null },
-      { id: 'hike-daypack', label: 'Day pack / backpack', tag: null },
-      { id: 'hike-snacks', label: 'Trail snacks', tag: null },
-      { id: 'hike-maps', label: 'Offline park & trail maps downloaded to phones (cell service is weak)', tag: null },
+      { id: 'clo-hats', label: 'Sun hat / baseball cap (per person)', tag: null },
+      { id: 'clo-sunglasses', label: 'Sunglasses (per person)', tag: null },
+      { id: 'clo-laundrybag', label: 'Laundry bag', tag: null },
     ]
   },
   {
-    id: 'kitchen',
-    label: 'Kitchen & food',
-    short: 'Kitchen',
-    icon: '\u{1F373}',
-    items: [
-      { id: 'kit-plates', label: 'Plates & bowls (check if included)', tag: 'verify' },
-      { id: 'kit-cups', label: 'Cups & mugs (5+)', tag: 'verify' },
-      { id: 'kit-silverware', label: 'Silverware / cutlery set', tag: 'verify' },
-      { id: 'kit-knife', label: "Sharp chef's knife (camper knives are bad)", tag: null },
-      { id: 'kit-board', label: 'Cutting board', tag: null },
-      { id: 'kit-canopener', label: 'Can opener', tag: null },
-      { id: 'kit-dishsoap', label: 'Dish soap, sponge, drying cloth', tag: null },
-      { id: 'kit-papertowels', label: 'Paper towels', tag: null },
-      { id: 'kit-foil', label: 'Aluminum foil', tag: null },
-      { id: 'kit-ziplock', label: 'Zip-lock bags (assorted)', tag: null },
-      { id: 'kit-grocerybags', label: 'Reusable grocery bags', tag: null },
-      { id: 'kit-cooler', label: 'Cooler (for beach days)', tag: null },
-      { id: 'kit-coolerstraps', label: 'Cooler straps / locking clips (park rule — ponies raid unsecured coolers)', tag: null },
-      { id: 'kit-ice', label: 'Ice or ice packs', tag: null },
-      { id: 'kit-waterjug', label: '5–7 gallon water jug (refill at the fill station)', tag: null },
-      { id: 'kit-coffeemaker', label: 'Coffee maker / pour-over', tag: null },
-      { id: 'kit-coffee', label: 'Ground coffee + filters', tag: null },
-      { id: 'kit-grilltools', label: 'Grill tongs & spatula', tag: null },
-      { id: 'kit-oil', label: 'Cooking oil / spray', tag: null },
-      { id: 'kit-spices', label: 'Salt, pepper, basic spices', tag: null },
-      { id: 'kit-condiments', label: 'Condiments', tag: null },
-      { id: 'kit-breakfast', label: 'Breakfast staples (eggs, bread, cereal)', tag: null },
-      { id: 'kit-dinners', label: 'Easy dinners (pasta, hot dogs, burgers)', tag: null },
-      { id: 'kit-snacks', label: 'Snacks & drinks for 7 days', tag: null },
-    ]
-  },
-  {
-    id: 'sleeping',
-    label: 'Sleeping & comfort',
-    short: 'Sleeping',
-    icon: '\u{1F6CF}️',
-    items: [
-      { id: 'slp-pillows', label: 'Pillows (confirm with rental)', tag: 'verify' },
-      { id: 'slp-bedding', label: 'Bedding / sheets / sleeping bags (confirm)', tag: 'verify' },
-      { id: 'slp-blanket', label: 'Extra blanket (nights get cool)', tag: null },
-      { id: 'slp-earplugs', label: 'Eye masks & earplugs', tag: null },
-      { id: 'slp-whitenoise', label: 'White-noise machine or small USB/battery fan', tag: 'kids' },
-      { id: 'slp-nightlight', label: 'Night light', tag: 'kids' },
-    ]
-  },
-  {
-    id: 'health',
-    label: 'Health & safety',
-    short: 'Health',
-    icon: '\u{1FA79}',
-    items: [
-      { id: 'hlth-firstaid', label: 'First aid kit', tag: null },
-      { id: 'hlth-meds', label: 'Prescription medications (full supply + extra)', tag: null },
-      { id: 'hlth-kidsmeds', label: "Children's ibuprofen/acetaminophen", tag: 'kids' },
-      { id: 'hlth-antihistamine', label: 'Antihistamine (Benadryl)', tag: null },
-      { id: 'hlth-hydrocortisone', label: 'Hydrocortisone cream', tag: null },
-      { id: 'hlth-aloe', label: 'Aloe vera gel (sunburn)', tag: null },
-      { id: 'hlth-afterbite', label: 'After-bite / sting relief', tag: null },
-      { id: 'hlth-thermometer', label: 'Thermometer', tag: null },
-      { id: 'hlth-tweezers', label: 'Fine-point tweezers / tick removal tool', tag: null },
-      { id: 'hlth-sanitizer', label: 'Hand sanitizer', tag: null },
-      { id: 'hlth-lifejackets', label: "Life jackets — included with kayak rental; reserve ahead, confirm kids' sizes & stand hours", tag: 'verify' },
-    ]
-  },
-  {
-    id: 'hygiene',
+    id: 'toiletries',
     label: 'Toiletries & hygiene',
     short: 'Toiletries',
     icon: '\u{1F9FC}',
@@ -1108,59 +1008,150 @@ const SECTIONS = [
       { id: 'hyg-bathtowels', label: 'Bath towels (separate from beach towels)', tag: null },
       { id: 'hyg-tp', label: 'Backup toilet paper', tag: null },
       { id: 'hyg-glasses', label: 'Contacts / glasses supplies', tag: null },
+      { id: 'beach-powder', label: 'Baby powder (rubs dry sand off skin)', tag: null },
     ]
   },
   {
-    id: 'clothing',
-    label: 'Clothing',
-    short: 'Clothing',
-    icon: '\u{1F455}',
+    id: 'health',
+    label: 'Health, sun & bugs',
+    short: 'Health',
+    icon: '\u{1FA79}',
     items: [
-      { id: 'clo-tshirts', label: 'T-shirts (5–6 per person — laundry pods packed)', tag: null },
-      { id: 'clo-shorts', label: 'Shorts (2–3 per person)', tag: null },
-      { id: 'clo-pants', label: 'Long pants (1–2 per person)', tag: null },
-      { id: 'clo-jacket', label: 'Light jacket or hoodie (per person)', tag: null },
-      { id: 'clo-rainjacket', label: 'Rain jacket — packable (per person)', tag: null },
-      { id: 'clo-underwear', label: 'Underwear & socks (1 per day + 2 extra per person)', tag: null },
-      { id: 'clo-pajamas', label: 'Pajamas (per person)', tag: null },
-      { id: 'clo-flipflops', label: 'Flip flops / camp shoes (double as shower shoes)', tag: null },
-      { id: 'clo-hats', label: 'Sun hat / baseball cap (per person)', tag: null },
-      { id: 'clo-sunglasses', label: 'Sunglasses (per person)', tag: null },
-      { id: 'clo-laundrybag', label: 'Laundry bag', tag: null },
+      { id: 'hlth-firstaid', label: 'First aid kit', tag: null },
+      { id: 'hlth-meds', label: 'Prescription medications (full supply + extra)', tag: null },
+      { id: 'hlth-kidsmeds', label: "Children's ibuprofen/acetaminophen", tag: 'kids' },
+      { id: 'hlth-antihistamine', label: 'Antihistamine (Benadryl)', tag: null },
+      { id: 'hlth-hydrocortisone', label: 'Hydrocortisone cream', tag: null },
+      { id: 'hlth-aloe', label: 'Aloe vera gel (sunburn)', tag: null },
+      { id: 'hlth-afterbite', label: 'After-bite / sting relief', tag: null },
+      { id: 'hlth-thermometer', label: 'Thermometer', tag: null },
+      { id: 'hlth-tweezers', label: 'Fine-point tweezers / tick removal tool', tag: null },
+      { id: 'hlth-sanitizer', label: 'Hand sanitizer', tag: null },
+      { id: 'beach-sunscreen', label: 'Sunscreen SPF 50+ (all activities — bring plenty)', tag: null },
+      { id: 'camp-bugspray', label: 'Bug spray with DEET or picaridin (campsite evenings + trail)', tag: null },
+      { id: 'camp-headnets', label: 'Bug head nets (one per person — greenhead flies ignore DEET)', tag: null },
+      { id: 'camp-thermacell', label: 'Thermacell / spatial repellent for the campsite', tag: null },
+      { id: 'hike-permethrin', label: 'Permethrin spray for clothing (pre-treat at home)', tag: null },
+      { id: 'hlth-lifejackets', label: "Life jackets — included with kayak rental; reserve ahead, confirm kids' sizes & stand hours", tag: 'verify' },
     ]
   },
   {
-    id: 'camp',
-    label: 'Camp life & logistics',
-    short: 'Camp life',
-    icon: '\u{1F3D5}️',
+    id: 'food',
+    label: 'Food & kitchen',
+    short: 'Food',
+    icon: '\u{1F373}',
+    items: [
+      { id: 'kit-plates', label: 'Plates & bowls (check if included)', tag: 'verify' },
+      { id: 'kit-cups', label: 'Cups & mugs (5+)', tag: 'verify' },
+      { id: 'kit-silverware', label: 'Silverware / cutlery set', tag: 'verify' },
+      { id: 'kit-knife', label: "Sharp chef's knife (camper knives are bad)", tag: null },
+      { id: 'kit-board', label: 'Cutting board', tag: null },
+      { id: 'kit-canopener', label: 'Can opener', tag: null },
+      { id: 'kit-grilltools', label: 'Grill tongs & spatula', tag: null },
+      { id: 'kit-dishsoap', label: 'Dish soap, sponge, drying cloth', tag: null },
+      { id: 'kit-papertowels', label: 'Paper towels', tag: null },
+      { id: 'kit-foil', label: 'Aluminum foil', tag: null },
+      { id: 'kit-ziplock', label: 'Zip-lock bags (assorted)', tag: null },
+      { id: 'kit-grocerybags', label: 'Reusable grocery bags', tag: null },
+      { id: 'kit-coolerstraps', label: 'Cooler straps / locking clips (park rule — ponies raid unsecured coolers)', tag: null },
+      { id: 'kit-ice', label: 'Ice or ice packs', tag: null },
+      { id: 'kit-waterjug', label: '5–7 gallon water jug (refill at the fill station)', tag: null },
+      { id: 'camp-waterbottles', label: 'Water bottles (one per person)', tag: null },
+      { id: 'kit-coffeemaker', label: 'Coffee maker / pour-over', tag: null },
+      { id: 'kit-coffee', label: 'Ground coffee + filters', tag: null },
+      { id: 'kit-oil', label: 'Cooking oil / spray', tag: null },
+      { id: 'kit-spices', label: 'Salt, pepper, basic spices', tag: null },
+      { id: 'kit-condiments', label: 'Condiments', tag: null },
+      { id: 'kit-breakfast', label: 'Breakfast staples (eggs, bread, cereal)', tag: null },
+      { id: 'kit-dinners', label: 'Easy dinners (pasta, hot dogs, burgers)', tag: null },
+      { id: 'kit-snacks', label: 'Snacks & drinks for 7 days', tag: null },
+      { id: 'hike-snacks', label: 'Trail snacks', tag: null },
+      { id: 'camp-roastingsticks', label: 'Marshmallow roasting sticks', tag: null },
+      { id: 'camp-smores', label: "S'mores supplies (grahams, chocolate, marshmallows)", tag: 'kids' },
+    ]
+  },
+  {
+    id: 'outdoor',
+    label: 'Outdoor & recreation',
+    short: 'Outdoor',
+    icon: '\u{1F3D6}\u{FE0F}',
+    items: [
+      { id: 'beach-towels', label: 'Beach towels (2 per person = 10)', tag: null },
+      { id: 'beach-bag', label: 'Beach bag or tote', tag: null },
+      { id: 'beach-sandtoys', label: 'Sand toys & buckets', tag: 'kids' },
+      { id: 'beach-boogie', label: 'Boogie boards (2–3)', tag: 'kids' },
+      { id: 'beach-goggles', label: 'Swim goggles (per kid)', tag: 'kids' },
+      { id: 'beach-blanket', label: 'Big beach blanket / ground sheet', tag: null },
+      { id: 'beach-phonepouch', label: 'Waterproof phone pouch', tag: null },
+      { id: 'beach-drybags', label: 'Dry bags for valuables', tag: null },
+      { id: 'beach-games', label: 'Frisbee / football / paddle ball', tag: null },
+      { id: 'camp-games', label: 'Camp games (cards, cornhole, etc.)', tag: null },
+      { id: 'bike-helmets', label: 'Bike helmets (all 5)', tag: null },
+      { id: 'bike-locks', label: 'Bike lock(s)', tag: null },
+      { id: 'bike-pump', label: 'Tire pump (hand pump)', tag: null },
+      { id: 'bike-repair', label: 'Basic repair kit (patches, multi-tool)', tag: null },
+      { id: 'bike-lights', label: 'Bike lights (front & rear)', tag: null },
+      { id: 'bike-cargo', label: 'Cargo rack or handlebar bag (fits our bikes?)', tag: 'verify' },
+      { id: 'hike-binoculars', label: 'Binoculars (ponies & birds)', tag: null },
+      { id: 'hike-fieldguide', label: 'Field guide — Maryland shorebirds', tag: null },
+      { id: 'hike-daypack', label: 'Day pack / backpack', tag: null },
+      { id: 'hike-maps', label: 'Offline park & trail maps downloaded to phones (cell service is weak)', tag: null },
+    ]
+  },
+  {
+    id: 'large',
+    label: 'Large & bulky items',
+    short: 'Large',
+    icon: '\u{1F4E6}',
+    items: [
+      { id: 'beach-canopy', label: 'EZ-up canopy tent', tag: null },
+      { id: 'beach-anchors', label: 'Sand anchors / sandbag weights + extra guy lines for canopy', tag: null },
+      { id: 'beach-umbrella', label: 'Beach umbrella with screw-in sand anchor (second shade)', tag: null },
+      { id: 'beach-chairs', label: 'Beach chairs (5)', tag: null },
+      { id: 'camp-chairs', label: 'Folding camp chairs', tag: null },
+      { id: 'camp-table', label: 'Small folding table (if not provided)', tag: 'verify' },
+      { id: 'beach-wagon', label: 'Beach wagon with balloon tires (haul gear over the dune)', tag: null },
+      { id: 'kit-cooler', label: 'Cooler (for beach days)', tag: null },
+      { id: 'bike-bikes', label: 'Bikes (5) + car rack — or reserve rentals (Assateague Outfitters; confirm days & hours)', tag: 'verify' },
+    ]
+  },
+  {
+    id: 'sleeping',
+    label: 'Sleeping & comfort',
+    short: 'Sleeping',
+    icon: '\u{1F6CF}\u{FE0F}',
+    items: [
+      { id: 'slp-pillows', label: 'Pillows (confirm with rental)', tag: 'verify' },
+      { id: 'slp-bedding', label: 'Bedding / sheets / sleeping bags (confirm)', tag: 'verify' },
+      { id: 'slp-blanket', label: 'Extra blanket (nights get cool)', tag: null },
+      { id: 'slp-earplugs', label: 'Eye masks & earplugs', tag: null },
+      { id: 'slp-whitenoise', label: 'White-noise machine or small USB/battery fan', tag: 'kids' },
+      { id: 'slp-nightlight', label: 'Night light', tag: 'kids' },
+    ]
+  },
+  {
+    id: 'tools',
+    label: 'Tools, power & documents',
+    short: 'Tools',
+    icon: '\u{1F9F0}',
     items: [
       { id: 'camp-headlamps', label: 'Headlamps or flashlights (one per person)', tag: null },
       { id: 'camp-powerbanks', label: 'Power banks / extra batteries', tag: null },
       { id: 'camp-lantern', label: 'Outdoor lantern', tag: null },
-      { id: 'camp-chairs', label: 'Folding camp chairs', tag: null },
-      { id: 'camp-waterbottles', label: 'Water bottles (one per person)', tag: null },
-      { id: 'camp-bugspray', label: 'Bug spray with DEET or picaridin (campsite evenings + trail)', tag: null },
-      { id: 'camp-headnets', label: 'Bug head nets (one per person — greenhead flies ignore DEET)', tag: null },
-      { id: 'camp-thermacell', label: 'Thermacell / spatial repellent for the campsite', tag: null },
+      { id: 'camp-chargers', label: 'Phone chargers & adapters', tag: null },
+      { id: 'camp-camera', label: 'Camera or GoPro', tag: null },
+      { id: 'camp-tablets', label: 'Books / tablets — download movies & shows BEFORE the trip (weak cell)', tag: null },
+      { id: 'camp-dvd', label: 'DVD player + a few DVDs (only if camper has a TV — confirm)', tag: 'verify' },
       { id: 'camp-lighter', label: 'Long-reach lighter + waterproof matches', tag: null },
-      { id: 'camp-roastingsticks', label: 'Marshmallow roasting sticks', tag: null },
-      { id: 'camp-smores', label: "S'mores supplies (grahams, chocolate, marshmallows)", tag: 'kids' },
       { id: 'camp-firewood', label: 'Firewood — BUY at camp store, do not bring (MD rule)', tag: null },
       { id: 'camp-clothesline', label: 'Clothesline + clothespins (park rule: bring your own)', tag: null },
       { id: 'camp-mat', label: 'Entry mat (sand catcher at camper door)', tag: null },
       { id: 'camp-broom', label: 'Small broom & dustpan', tag: null },
       { id: 'camp-scissors', label: 'Scissors + small sewing kit', tag: null },
       { id: 'camp-umbrella', label: 'Rain umbrella', tag: null },
-      { id: 'camp-table', label: 'Small folding table (if not provided)', tag: 'verify' },
       { id: 'camp-trashbags', label: 'Heavy-duty trash bags', tag: null },
       { id: 'camp-laundrypods', label: 'Laundry detergent pods', tag: null },
       { id: 'camp-ducttape', label: 'Duct tape & zip ties', tag: null },
-      { id: 'camp-games', label: 'Camp games (cards, cornhole, etc.)', tag: null },
-      { id: 'camp-tablets', label: 'Books / tablets — download movies & shows BEFORE the trip (weak cell)', tag: null },
-      { id: 'camp-dvd', label: 'DVD player + a few DVDs (only if camper has a TV — confirm)', tag: 'verify' },
-      { id: 'camp-chargers', label: 'Phone chargers & adapters', tag: null },
-      { id: 'camp-camera', label: 'Camera or GoPro', tag: null },
       { id: 'camp-confirmation', label: 'Printed rental confirmation', tag: 'verify' },
       { id: 'camp-payment', label: 'Credit card for NPS entrance ($25/vehicle — cashless) + small cash for camp store', tag: null },
       { id: 'camp-contacts', label: 'Emergency contact list', tag: null },
@@ -1168,7 +1159,7 @@ const SECTIONS = [
   },
   {
     id: 'camper',
-    label: 'Camper setup — verify with rental',
+    label: 'Camper hookups — verify with rental',
     short: 'Camper',
     icon: '\u{1F69A}',
     items: [
@@ -1185,6 +1176,18 @@ const SECTIONS = [
     ]
   }
 ];
+
+// Custom items added under an old (pre-recategorization) section id are moved
+// to the new section that replaced it, so user-added items survive the change.
+const CUSTOM_SECTION_MIGRATE = { beach: 'outdoor', bike: 'outdoor', hiking: 'outdoor', kitchen: 'food', hygiene: 'toiletries', camp: 'tools' };
+function customSectionId(sid) { return SECTION_IDS.has(sid) ? sid : (CUSTOM_SECTION_MIGRATE[sid] || null); }
+function addCustomItems(targetSid, arr) {
+  if (!arr.length) return;
+  if (!state.custom[targetSid]) state.custom[targetSid] = [];
+  const have = new Set(state.custom[targetSid].map(it => it.id));
+  arr.forEach(it => { if (!have.has(it.id)) { state.custom[targetSid].push(it); have.add(it.id); } });
+  state.custom[targetSid] = state.custom[targetSid].slice(0, MAX_CUSTOM_PER_SECTION);
+}
 
 // Maps old v2 index-based keys (sectionId__index) to stable ids so saved
 // checkmarks survive the list redesign. null = item removed/replaced.
@@ -1224,9 +1227,9 @@ const DEFAULT_LOCATIONS = [
 // Smart pre-fill: a default location per category, with item-level overrides
 // for valuables / electronics / personal carry that ride in my backpack.
 const SECTION_DEFAULT_LOC = {
-  beach: 'loc-trunk', bike: 'loc-trunk', hiking: 'loc-trunk', kitchen: 'loc-trunk',
-  sleeping: 'loc-trunk', health: 'loc-mybackpack', hygiene: 'loc-familytoiletry',
-  clothing: 'loc-familybags', camp: 'loc-trunk', camper: 'loc-trunk',
+  clothing: 'loc-familybags', toiletries: 'loc-familytoiletry', health: 'loc-mybackpack',
+  food: 'loc-trunk', outdoor: 'loc-trunk', large: 'loc-trunk', sleeping: 'loc-trunk',
+  tools: 'loc-trunk', camper: 'loc-trunk',
 };
 const ITEM_LOC_OVERRIDE = {
   'beach-phonepouch': 'loc-mybackpack', 'beach-drybags': 'loc-mybackpack',
@@ -1273,12 +1276,12 @@ function load() {
         }
         if (p.custom && typeof p.custom === 'object' && !Array.isArray(p.custom)) {
           for (const sid in p.custom) {
-            if (!SECTION_IDS.has(sid) || !Array.isArray(p.custom[sid])) continue;
+            const target = customSectionId(sid);
+            if (!target || !Array.isArray(p.custom[sid])) continue;
             const arr = p.custom[sid]
               .filter(it => it && typeof it.id === 'string' && typeof it.label === 'string' && !ITEM_IDS.has(it.id))
-              .slice(0, MAX_CUSTOM_PER_SECTION)
               .map(it => ({ id: it.id, label: it.label.slice(0, MAX_LABEL) }));
-            if (arr.length) state.custom[sid] = arr;
+            addCustomItems(target, arr);
           }
         }
         if (p.hidden && typeof p.hidden === 'object' && !Array.isArray(p.hidden)) {
@@ -1347,12 +1350,12 @@ function migrateV2() {
       if (m && MIGRATE[m[1]] && MIGRATE[m[1]][+m[2]]) state.checked[MIGRATE[m[1]][+m[2]]] = true;
     }
     for (const sid in oldCustom) {
-      if (!SECTION_IDS.has(sid) || !Array.isArray(oldCustom[sid])) continue;
+      const target = customSectionId(sid);
+      if (!target || !Array.isArray(oldCustom[sid])) continue;
       const arr = oldCustom[sid]
         .filter(it => it && typeof it.id === 'string' && typeof it.label === 'string' && !ITEM_IDS.has(it.id))
-        .slice(0, MAX_CUSTOM_PER_SECTION)
         .map(it => ({ id: it.id, label: it.label.slice(0, MAX_LABEL) }));
-      if (arr.length) state.custom[sid] = arr;
+      addCustomItems(target, arr);
     }
     save();
   } catch (e) {}
@@ -1401,17 +1404,16 @@ function applyRemote(data) {
       for (const k in data.checked) if (data.checked[k] === true) checked[k] = true;
     state.checked = checked;
 
-    const custom = {};
+    state.custom = {};
     if (data.custom && typeof data.custom === 'object' && !Array.isArray(data.custom))
       for (const sid in data.custom) {
-        if (!SECTION_IDS.has(sid) || !Array.isArray(data.custom[sid])) continue;
+        const target = customSectionId(sid);
+        if (!target || !Array.isArray(data.custom[sid])) continue;
         const arr = data.custom[sid]
           .filter(it => it && typeof it.id === 'string' && typeof it.label === 'string' && !ITEM_IDS.has(it.id))
-          .slice(0, MAX_CUSTOM_PER_SECTION)
           .map(it => ({ id: it.id, label: it.label.slice(0, MAX_LABEL) }));
-        if (arr.length) custom[sid] = arr;
+        addCustomItems(target, arr);
       }
-    state.custom = custom;
 
     const hidden = {};
     if (data.hidden && typeof data.hidden === 'object' && !Array.isArray(data.hidden))
@@ -1456,16 +1458,12 @@ function mergeRemote(data) {
 
     if (data.custom && typeof data.custom === 'object' && !Array.isArray(data.custom))
       for (const sid in data.custom) {
-        if (!SECTION_IDS.has(sid) || !Array.isArray(data.custom[sid])) continue;
-        if (!state.custom[sid]) state.custom[sid] = [];
-        const have = new Set(state.custom[sid].map(it => it.id));
-        data.custom[sid].forEach(it => {
-          if (it && typeof it.id === 'string' && typeof it.label === 'string' && !ITEM_IDS.has(it.id) && !have.has(it.id)) {
-            state.custom[sid].push({ id: it.id, label: it.label.slice(0, MAX_LABEL) });
-            have.add(it.id);
-          }
-        });
-        state.custom[sid] = state.custom[sid].slice(0, MAX_CUSTOM_PER_SECTION);
+        const target = customSectionId(sid);
+        if (!target || !Array.isArray(data.custom[sid])) continue;
+        const arr = data.custom[sid]
+          .filter(it => it && typeof it.id === 'string' && typeof it.label === 'string' && !ITEM_IDS.has(it.id))
+          .map(it => ({ id: it.id, label: it.label.slice(0, MAX_LABEL) }));
+        addCustomItems(target, arr);
       }
 
     if (Array.isArray(data.locations)) {
@@ -1576,7 +1574,7 @@ function buildItem(sec, item, isCustom) {
 
   const btn = el('button', isCustom ? 'item-delete' : 'item-delete item-hide', '×');
   btn.type = 'button';
-  btn.setAttribute('aria-label', (isCustom ? 'Remove ' : 'Hide ') + item.label);
+  btn.setAttribute('aria-label', 'Remove ' + item.label);
   row.appendChild(btn);
   return row;
 }
@@ -1634,7 +1632,7 @@ function buildSection(sec) {
   sec.items.forEach(it => { if (!state.hidden[it.id]) grid.appendChild(buildItem(sec, it, false)); });
   (state.custom[sec.id] || []).forEach(ci => grid.appendChild(buildItem(sec, ci, true)));
   if (stats.hiddenCount > 0) {
-    const sh = el('button', 'show-hidden', stats.hiddenCount + ' hidden — show');
+    const sh = el('button', 'show-hidden', stats.hiddenCount + ' removed — show');
     sh.type = 'button';
     sh.dataset.section = sec.id;
     grid.appendChild(sh);
@@ -1903,8 +1901,8 @@ function hideBuiltinItem(row) {
   state.hidden[id] = true;
   save();
   renderList();
-  announce('Hid ' + item.label);
-  showSnack('Hidden “' + item.label + '” — no longer counts toward progress', 'Undo', () => {
+  announce('Removed ' + item.label);
+  showSnack('Removed “' + item.label + '” — restore it from “show removed”', 'Undo', () => {
     delete state.hidden[id];
     save();
     renderList();
@@ -1919,7 +1917,7 @@ function unhideSection(secId) {
   sec.items.forEach(it => { delete state.hidden[it.id]; });
   save();
   renderList();
-  announce('Restored hidden items in ' + sec.label);
+  announce('Restored removed items in ' + sec.label);
   const tog = document.querySelector('.section[data-section="' + secId + '"] .section-toggle');
   if (tog) tog.focus();
 }
@@ -2125,7 +2123,7 @@ function toggleEditMode() {
   btn.textContent = state.editMode ? 'done editing' : 'edit list';
   document.body.classList.toggle('edit-mode', state.editMode);
   announce(state.editMode
-    ? 'Edit mode on — reassign bags, hide items, rename or delete locations'
+    ? 'Edit mode on — reassign bags, rename or delete locations'
     : 'Edit mode off');
 }
 
